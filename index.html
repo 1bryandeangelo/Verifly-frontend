@@ -20,23 +20,27 @@
     }
     .card {
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       text-align: center;
     }
     button {
-      padding: 14px 22px;
+      width: 100%;
+      padding: 14px;
       font-size: 16px;
       border-radius: 12px;
       border: none;
       background: #3b82f6;
       color: white;
       cursor: pointer;
-      width: 100%;
       margin-top: 12px;
     }
-    input[type=file] {
-      margin-top: 12px;
+    input {
       width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
     }
     .msg {
       margin-top: 14px;
@@ -48,7 +52,7 @@
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.7);
+      background: rgba(0,0,0,0.7);
       display: none;
       align-items: center;
       justify-content: center;
@@ -57,17 +61,9 @@
       background: #020617;
       border: 1px solid #1e293b;
       border-radius: 14px;
-      padding: 28px;
+      padding: 24px;
       width: 100%;
-      max-width: 380px;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 15px;
+      max-width: 360px;
     }
     .link {
       margin-top: 12px;
@@ -81,8 +77,7 @@
 <body>
 
 <div class="card">
-  <h2>Verify an image</h2>
-  <input type="file" id="imageInput" accept="image/*" />
+  <h2>Verifly</h2>
   <button id="runScanBtn">Run Free Scan</button>
   <div id="status" class="msg"></div>
 </div>
@@ -90,10 +85,16 @@
 <div class="modal" id="authModal">
   <div class="modal-box">
     <h3 id="authTitle">Create account</h3>
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password (8+ chars)" />
+
+    <input id="emailInput" type="email" placeholder="Email" />
+    <input id="passwordInput" type="password" placeholder="Password (8+ chars)" />
+
     <button id="authBtn">Continue</button>
-    <div class="link" id="toggleAuth">Already have an account? Sign in</div>
+
+    <div class="link" id="toggleAuth">
+      Already have an account? Sign in
+    </div>
+
     <div id="authMsg" class="msg"></div>
   </div>
 </div>
@@ -107,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   const runScanBtn = document.getElementById("runScanBtn");
-  const imageInput = document.getElementById("imageInput");
   const status = document.getElementById("status");
 
   const authModal = document.getElementById("authModal");
@@ -116,10 +116,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const authTitle = document.getElementById("authTitle");
   const authMsg = document.getElementById("authMsg");
 
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+
   let isLogin = false;
 
-  function openAuth() { authModal.style.display = "flex"; }
-  function closeAuth() { authModal.style.display = "none"; }
+  function openAuth() {
+    authModal.style.display = "flex";
+  }
+
+  function closeAuth() {
+    authModal.style.display = "none";
+  }
 
   toggleAuth.onclick = () => {
     isLogin = !isLogin;
@@ -132,15 +140,16 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   authBtn.onclick = async () => {
-  alert("AUTH BUTTON CLICKED");
+    authMsg.textContent = "";
 
-  authMsg.textContent = "";
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-
-  const email = emailInput.value;
-  const password = passwordInput.value;
+    if (!email || !password) {
+      authMsg.textContent = "Email and password required.";
+      authMsg.className = "msg error";
+      return;
+    }
 
     if (password.length < 8) {
       authMsg.textContent = "Password must be at least 8 characters.";
@@ -148,83 +157,42 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const fn = isLogin
-      ? supabase.auth.signInWithPassword
-      : supabase.auth.signUp;
-
-    const { error } = await fn({ email, password });
-    if (error) {
-      authMsg.textContent = error.message;
-      authMsg.className = "msg error";
+    let result;
+    if (isLogin) {
+      result = await supabase.auth.signInWithPassword({ email, password });
     } else {
-      authMsg.textContent = isLogin
-        ? "Signed in."
-        : "Check your email to confirm.";
+      result = await supabase.auth.signUp({ email, password });
+    }
+
+    if (result.error) {
+      authMsg.textContent = result.error.message;
+      authMsg.className = "msg error";
+      return;
+    }
+
+    if (isLogin) {
+      closeAuth();
+      status.textContent = "Signed in successfully.";
+      status.className = "msg success";
+    } else {
+      authMsg.textContent = "Check your email to confirm your account.";
       authMsg.className = "msg success";
-      if (isLogin) closeAuth();
     }
   };
 
-  authBtn.onclick = async () => {
-  authMsg.textContent = "";
-  authMsg.className = "msg";
+  runScanBtn.onclick = async () => {
+    status.textContent = "";
 
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
+    const { data } = await supabase.auth.getSession();
 
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+    if (!data.session) {
+      openAuth();
+      return;
+    }
 
-  if (!email || !password) {
-    authMsg.textContent = "Email and password are required.";
-    authMsg.className = "msg error";
-    return;
-  }
-
-  if (password.length < 8) {
-    authMsg.textContent = "Password must be at least 8 characters.";
-    authMsg.className = "msg error";
-    return;
-  }
-
-  authMsg.textContent = isLogin
-    ? "Signing in…"
-    : "Creating account…";
-
-  let result;
-
-  if (isLogin) {
-    result = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-  } else {
-    result = await supabase.auth.signUp({
-      email,
-      password
-    });
-  }
-
-  const { data, error } = result;
-
-  if (error) {
-    authMsg.textContent = error.message;
-    authMsg.className = "msg error";
-    return;
-  }
-
-  if (!isLogin) {
-    authMsg.textContent =
-      "Account created. Check your email to confirm.";
-    authMsg.className = "msg success";
-    return;
-  }
-
-  // Login success
-  closeAuth();
-  status.textContent = "Signed in successfully.";
-  status.className = "msg success";
-};
+    status.textContent = "You are logged in.";
+    status.className = "msg success";
+  };
 
 });
 </script>
