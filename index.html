@@ -198,12 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    if (res.status === 403) {
-      status.textContent = "Free scan already used. Upgrade required.";
-      status.className = "msg error";
-      return;
-    }
-
     if (res.status === 401) {
       status.textContent = "Session expired. Please sign in again.";
       status.className = "msg error";
