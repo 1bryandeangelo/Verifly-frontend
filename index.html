@@ -211,3 +211,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
+<script>
+  async function runFreeScan() {
+    try {
+      // 1️⃣ Get current session
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error || !session) {
+        alert("Please sign in to run a scan.");
+        return;
+      }
+
+      const accessToken = session.access_token;
+
+      // 2️⃣ Call backend scan gate
+      const res = await fetch("https://YOUR-RENDER-URL.onrender.com/scan", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      // 3️⃣ Handle responses
+      if (res.status === 401) {
+        alert("Session expired. Please sign in again.");
+        await supabase.auth.signOut();
+        return;
+      }
+
+      if (res.status === 403) {
+        alert("Free scan already used. Upgrade required.");
+        return;
+      }
+
+      if (!res.ok) {
+        alert("Scan failed. Try again.");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.allowed) {
+        alert("✅ Free scan unlocked (next step: AI hookup)");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Unexpected error");
+    }
+  }
+</script>
