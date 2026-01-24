@@ -14,7 +14,6 @@
       background: #f8fafc;
     }
     
-    /* Hero Section */
     .hero {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -33,7 +32,6 @@
       margin: 0 auto 40px;
     }
     
-    /* Upload Section */
     .upload-section {
       max-width: 600px;
       margin: -50px auto 80px;
@@ -55,10 +53,6 @@
     .upload-area:hover {
       border-color: #667eea;
       background: #f1f5f9;
-    }
-    .upload-area.dragover {
-      border-color: #22c55e;
-      background: #f0fdf4;
     }
     input[type="file"] { display: none; }
     
@@ -91,7 +85,6 @@
       margin-top: 10px;
     }
     
-    /* Results */
     .result-card {
       background: #f8fafc;
       border-radius: 12px;
@@ -110,7 +103,6 @@
       margin-top: 10px;
     }
     
-    /* Section Styling */
     .section {
       padding: 80px 20px;
       max-width: 1200px;
@@ -132,7 +124,6 @@
       margin-right: auto;
     }
     
-    /* Trust Issues Grid */
     .trust-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -165,7 +156,6 @@
       line-height: 1.6;
     }
     
-    /* How It Works */
     .steps {
       display: flex;
       justify-content: space-around;
@@ -200,7 +190,6 @@
       line-height: 1.6;
     }
     
-    /* Pricing */
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -283,7 +272,6 @@
       transform: translateY(-2px);
     }
     
-    /* Messages */
     .msg {
       padding: 12px;
       border-radius: 8px;
@@ -302,7 +290,6 @@
       color: #16a34a;
     }
     
-    /* Auth Modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -340,9 +327,9 @@
       cursor: pointer;
       text-align: center;
       text-decoration: underline;
+      display: block;
     }
     
-    /* Header */
     .header {
       position: fixed;
       top: 0;
@@ -371,6 +358,17 @@
       font-size: 14px;
       color: #64748b;
     }
+    .header-btn {
+      padding: 8px 20px;
+      background: #667eea;
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      width: auto;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
     .logout-btn {
       padding: 8px 20px;
       background: #f1f5f9;
@@ -390,13 +388,12 @@
   <div class="logo">Verifly</div>
   <div class="user-menu">
     <span class="user-email" id="headerEmail"></span>
+    <button class="header-btn" id="headerSignIn">Sign In</button>
     <button class="logout-btn" id="headerLogout" style="display:none;">Sign Out</button>
-    <button class="logout-btn" id="headerLogin" onclick="showAuth()">Sign In</button>
   </div>
 </div>
 
 <div class="main-content">
-  <!-- Hero & Upload -->
   <div class="hero">
     <h1>Verify What's Real</h1>
     <p>AI-powered detection to identify AI-generated images, audio, and video</p>
@@ -422,7 +419,6 @@
     </div>
   </div>
 
-  <!-- Trust Issues Section -->
   <div class="section" style="background: white;">
     <h2>THE INTERNET IS GETTING HARDER TO TRUST</h2>
     <p class="section-subtitle">AI-generated content is everywhere. Protect yourself from deception.</p>
@@ -451,7 +447,6 @@
     </div>
   </div>
 
-  <!-- How It Works -->
   <div class="section">
     <h2>HOW IT WORKS</h2>
     <p class="section-subtitle">Detect AI-generated content in three simple steps</p>
@@ -475,7 +470,6 @@
     </div>
   </div>
 
-  <!-- Pricing -->
   <div class="section" style="background: white;">
     <h2>PRICING</h2>
     <p class="section-subtitle">Choose the plan that fits your needs</p>
@@ -489,7 +483,7 @@
           <li>Image detection only</li>
           <li>Instant results</li>
         </ul>
-        <button class="buy-btn" onclick="scrollToUpload()">Try Now</button>
+        <button class="buy-btn" id="tryNowBtn">Try Now</button>
       </div>
       
       <div class="pricing-card">
@@ -501,7 +495,7 @@
           <li>No subscription needed</li>
           <li>Instant results</li>
         </ul>
-        <button class="buy-btn" onclick="buySingleScan()">Buy Scan</button>
+        <button class="buy-btn" id="buySingleBtn">Buy Scan</button>
       </div>
       
       <div class="pricing-card featured">
@@ -514,7 +508,7 @@
           <li>Scan history</li>
           <li>Email support</li>
         </ul>
-        <button class="buy-btn" onclick="buySubscription('pro')">Subscribe</button>
+        <button class="buy-btn" id="buyProBtn">Subscribe</button>
       </div>
       
       <div class="pricing-card">
@@ -527,13 +521,12 @@
           <li>Priority support</li>
           <li>API access</li>
         </ul>
-        <button class="buy-btn" onclick="buySubscription('power')">Subscribe</button>
+        <button class="buy-btn" id="buyPowerBtn">Subscribe</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Auth Modal -->
 <div class="modal" id="authModal">
   <div class="modal-box">
     <h2 id="authTitle">Create Account</h2>
@@ -546,6 +539,74 @@
 </div>
 
 <script>
+document.getElementById("buyProBtn").onclick = function() {
+  supabase.auth.getSession().then(function(response) {
+    if (!response.data.session) {
+      authModal.style.display = "flex";
+      return;
+    }
+    
+    fetch(BACKEND_URL + "/create-checkout", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + response.data.session.access_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        priceId: "price_1Srqvt6ILDOjliDIOBp0D9od",
+        mode: "subscription"
+      })
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data.sessionId) {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        alert("Error: " + (data.error || "Could not create checkout"));
+      }
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
+  });
+};
+
+document.getElementById("buyPowerBtn").onclick = function() {
+  supabase.auth.getSession().then(function(response) {
+    if (!response.data.session) {
+      authModal.style.display = "flex";
+      return;
+    }
+    
+    fetch(BACKEND_URL + "/create-checkout", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + response.data.session.access_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        priceId: "price_1SrqwD6ILDOjliDIICrdtQr2",
+        mode: "subscription"
+      })
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data.sessionId) {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        alert("Error: " + (data.error || "Could not create checkout"));
+      }
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
+  });
+};
+
+});
+</script>
+
+</body>
+</html>.addEventListener('DOMContentLoaded', function() {
+
 const supabase = window.supabase.createClient(
   "https://tfkwctmewgsolcaphsbp.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg"
@@ -558,8 +619,8 @@ let selectedFile = null;
 let isLogin = false;
 let currentUser = null;
 
-const header = document.getElementById("header");
 const headerEmail = document.getElementById("headerEmail");
+const headerSignIn = document.getElementById("headerSignIn");
 const headerLogout = document.getElementById("headerLogout");
 const authModal = document.getElementById("authModal");
 const uploadArea = document.getElementById("uploadArea");
@@ -576,7 +637,7 @@ const authMsg = document.getElementById("authMsg");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
-// Check session on load
+// Check session
 supabase.auth.getSession().then(function(response) {
   if (response.data.session) {
     currentUser = response.data.session.user;
@@ -585,34 +646,33 @@ supabase.auth.getSession().then(function(response) {
 });
 
 function showLoggedIn() {
-  header.style.display = "flex";
   headerEmail.textContent = currentUser.email;
-  document.getElementById("headerLogout").style.display = "block";
-  document.getElementById("headerLogin").style.display = "none";
+  headerEmail.style.display = "block";
+  headerSignIn.style.display = "none";
+  headerLogout.style.display = "block";
 }
 
-function showAuth() {
-  authModal.style.display = "flex";
+function showLoggedOut() {
+  headerEmail.textContent = "";
+  headerEmail.style.display = "none";
+  headerSignIn.style.display = "block";
+  headerLogout.style.display = "none";
 }
 
-function hideAuth() {
-  authModal.style.display = "none";
-}
-
-document.getElementById("headerLogin").onclick = function() {
+// Header buttons
+headerSignIn.onclick = function() {
   authModal.style.display = "flex";
 };
-  
+
 headerLogout.onclick = function() {
   supabase.auth.signOut().then(function() {
     currentUser = null;
-    headerEmail.textContent = "";
-    document.getElementById("headerLogout").style.display = "none";
-    document.getElementById("headerLogin").style.display = "block";
+    showLoggedOut();
     resetUI();
   });
 };
 
+// Auth toggle
 toggleAuth.onclick = function() {
   isLogin = !isLogin;
   authTitle.textContent = isLogin ? "Sign In" : "Create Account";
@@ -621,6 +681,7 @@ toggleAuth.onclick = function() {
   authMsg.style.display = "none";
 };
 
+// Auth submit
 authBtn.onclick = function() {
   const email = emailInput.value.trim();
   const password = passwordInput.value;
@@ -640,7 +701,7 @@ authBtn.onclick = function() {
         authMsg.style.display = "block";
       } else {
         currentUser = response.data.user;
-        hideAuth();
+        authModal.style.display = "none";
         showLoggedIn();
       }
     });
@@ -670,7 +731,15 @@ authBtn.onclick = function() {
 };
 
 // File upload
-uploadArea.onclick = function() { fileInput.click(); };
+uploadArea.onclick = function() {
+  supabase.auth.getSession().then(function(response) {
+    if (!response.data.session) {
+      authModal.style.display = "flex";
+    } else {
+      fileInput.click();
+    }
+  });
+};
 
 fileInput.onchange = function(e) {
   const file = e.target.files[0];
@@ -701,12 +770,13 @@ function handleFileSelect(file) {
   resultCard.style.display = "none";
 }
 
+// Scan button
 scanBtn.onclick = function() {
   if (!selectedFile) return;
   
   supabase.auth.getSession().then(function(sessionResponse) {
     if (!sessionResponse.data.session) {
-      showAuth();
+      authModal.style.display = "flex";
       return;
     }
     
@@ -733,12 +803,12 @@ scanBtn.onclick = function() {
         status.innerHTML = '<div class="msg error">Session expired. Please sign in again.</div>';
         supabase.auth.signOut();
         currentUser = null;
-        header.style.display = "none";
+        showLoggedOut();
         return;
       }
 
       if (result.status === 403) {
-        status.innerHTML = '<div class="msg error">Free scan used. <a href="#pricing" onclick="scrollToPricing()" style="color:#667eea;text-decoration:underline;">Upgrade to continue</a></div>';
+        status.innerHTML = '<div class="msg error">Free scan used. Scroll down to purchase more scans!</div>';
         scanBtn.textContent = "Analyze File";
         scanBtn.disabled = false;
         return;
@@ -794,11 +864,15 @@ function resetUI() {
   fileInput.value = "";
 }
 
-// Stripe checkout
-function buySingleScan() {
+// Pricing buttons
+document.getElementById("tryNowBtn").onclick = function() {
+  document.getElementById("uploadSection").scrollIntoView({ behavior: 'smooth' });
+};
+
+document.getElementById("buySingleBtn").onclick = function() {
   supabase.auth.getSession().then(function(response) {
     if (!response.data.session) {
-      showAuth();
+      authModal.style.display = "flex";
       return;
     }
     
@@ -812,25 +886,18 @@ function buySingleScan() {
         priceId: "price_1SrqvY6ILDOjliDIBaQcBzc3",
         mode: "payment"
       })
-    }).then(res => res.json())
-      .then(data => {
-        if (data.sessionId) {
-          stripe.redirectToCheckout({ sessionId: data.sessionId });
-        }
-      });
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data.sessionId) {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        alert("Error: " + (data.error || "Could not create checkout"));
+      }
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
   });
-}
+};
 
-function buySubscription(plan) {
-  supabase.auth.getSession().then(function(response) {
-    if (!response.data.session) {
-      showAuth();
-      return;
-    }
-    
-    const priceId = plan === 'pro' ? 'price_1Srqvt6ILDOjliDIOBp0D9od' : 'price_1SrqwD6ILDOjliDIICrdtQr2';
-    
-    fetch(BACKEND_URL + "/create-checkout", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer "
+document
