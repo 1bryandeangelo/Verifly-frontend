@@ -204,8 +204,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!res.ok) {
-      status.textContent = "Scan failed.";
+    if (res.status === 401) {
+      status.textContent = "Session expired. Please sign in again.";
+      status.className = "msg error";
+      await supabase.auth.signOut();
+      return;
+    }
+
+    if (res.status === 403) {
+      status.textContent = "Free scan already used. Upgrade required.";
+      status.className = "msg error";
+      return;
+    }
+
+     if (!res.ok) {
+      status.textContent = "Unexpected server error.";
       status.className = "msg error";
       return;
     }
