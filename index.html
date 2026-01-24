@@ -259,7 +259,7 @@ const authMsg = document.getElementById("authMsg");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
-// Check session on load// Check session on load
+// Check session on load
 (async () => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
