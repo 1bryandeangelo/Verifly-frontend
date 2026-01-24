@@ -167,48 +167,49 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ✅ FINAL SCAN FLOW (BACKEND GATED)
-  runScanBtn.onclick = async () => {
-    status.textContent = "";
+runScanBtn.onclick = async () => {
+  status.textContent = "";
 
-    const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    openAuth();
+    return;
+  }
 
-    if (!session) {
-      openAuth();
-      return;
-    }
+  const fileInput = document.getElementById("imageInput");
+  if (!fileInput.files.length) {
+    status.textContent = "Please select an image.";
+    status.className = "msg error";
+    return;
+  }
 
-    const accessToken = session.access_token;
+  const formData = new FormData();
+  formData.append("image", fileInput.files[0]);
 
-    const res = await fetch("https://verify-backend-rzx1.onrender.com/scan", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      }
-    });
+  const res = await fetch("https://verify-backend-rzx1.onrender.com/scan", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${session.access_token}`
+    },
+    body: formData
+  });
 
-    if (res.status === 401) {
-      status.textContent = "Session expired. Please sign in again.";
-      status.className = "msg error";
-      await supabase.auth.signOut();
-      return;
-    }
+  if (res.status === 403) {
+    status.textContent = "Free scan already used.";
+    status.className = "msg error";
+    return;
+  }
 
-    if (res.status === 403) {
-      status.textContent = "Free scan already used. Upgrade required.";
-      status.className = "msg error";
-      return;
-    }
+  if (!res.ok) {
+    status.textContent = "Scan failed.";
+    status.className = "msg error";
+    return;
+  }
 
-    if (!res.ok) {
-      status.textContent = "Scan failed. Try again.";
-      status.className = "msg error";
-      return;
-    }
-
-    status.textContent = "✅ Free scan unlocked (backend gate passed)";
-    status.className = "msg success";
-  };
+  const data = await res.json();
+  status.textContent = data.message;
+  status.className = "msg success";
+};
 
 });
 </script>
