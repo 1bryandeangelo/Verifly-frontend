@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const accessToken = session.access_token;
 
       // 2️⃣ Call backend scan gate
-      const res = await fetch("https://YOUR-RENDER-URL.onrender.com/scan", {
+      const res = await fetch("https://verify-backend-rzx1.onrender.com", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
