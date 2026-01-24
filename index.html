@@ -587,6 +587,8 @@ supabase.auth.getSession().then(function(response) {
 function showLoggedIn() {
   header.style.display = "flex";
   headerEmail.textContent = currentUser.email;
+  document.getElementById("headerLogout").style.display = "block";
+  document.getElementById("headerLogin").style.display = "none";
 }
 
 function showAuth() {
@@ -600,7 +602,9 @@ function hideAuth() {
 headerLogout.onclick = function() {
   supabase.auth.signOut().then(function() {
     currentUser = null;
-    header.style.display = "none";
+    headerEmail.textContent = "";
+    document.getElementById("headerLogout").style.display = "none";
+    document.getElementById("headerLogin").style.display = "block";
     resetUI();
   });
 };
