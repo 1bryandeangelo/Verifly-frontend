@@ -20,7 +20,7 @@
     }
     .card {
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       text-align: center;
     }
     button {
@@ -32,6 +32,10 @@
       background: #3b82f6;
       color: white;
       cursor: pointer;
+      margin-top: 12px;
+    }
+    input[type="file"] {
+      width: 100%;
       margin-top: 12px;
     }
     input {
@@ -77,11 +81,16 @@
 <body>
 
 <div class="card">
-  <h2>Verifly</h2>
+  <h2>Verify an image</h2>
+
+  <input type="file" id="imageInput" accept="image/*" />
+
   <button id="runScanBtn">Run Free Scan</button>
+
   <div id="status" class="msg"></div>
 </div>
 
+<!-- AUTH MODAL -->
 <div class="modal" id="authModal">
   <div class="modal-box">
     <h3 id="authTitle">Create account</h3>
@@ -104,10 +113,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const supabase = window.supabase.createClient(
     "https://tfkwctmewgsolcaphsbp.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg"
+    "YOUR_PUBLIC_ANON_KEY"
   );
 
   const runScanBtn = document.getElementById("runScanBtn");
+  const imageInput = document.getElementById("imageInput");
   const status = document.getElementById("status");
 
   const authModal = document.getElementById("authModal");
@@ -180,17 +190,74 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // 🚨 SCAN LOGIC (NEW)
   runScanBtn.onclick = async () => {
     status.textContent = "";
 
     const { data } = await supabase.auth.getSession();
+    const session = data.session;
 
-    if (!data.session) {
+    if (!session) {
       openAuth();
       return;
     }
 
-    status.textContent = "You are logged in.";
+    if (!imageInput.files.length) {
+      status.textContent = "Please select an image first.";
+      status.className = "msg error";
+      return;
+    }
+
+    status.textContent = "Uploading image…";
+
+    const file = imageInput.files[0];
+    const path = `${session.user.id}/${Date.now()}-${file.name}`;
+
+    const { error: uploadError } = await supabase
+      .storage
+      .from("scans")
+      .upload(path, file);
+
+    if (uploadError) {
+      status.textContent = "Image upload failed.";
+      status.className = "msg error";
+      return;
+    }
+
+    const { data: urlData } = supabase
+      .storage
+      .from("scans")
+      .getPublicUrl(path);
+
+    status.textContent = "Running scan…";
+
+    const res = await fetch(
+      "https://verify-backend-rzx1.onrender.com/scan",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          imageUrl: urlData.publicUrl
+        })
+      }
+    );
+
+    if (res.status === 403) {
+      status.textContent = "Free scan already used.";
+      status.className = "msg error";
+      return;
+    }
+
+    if (!res.ok) {
+      status.textContent = "Scan failed.";
+      status.className = "msg error";
+      return;
+    }
+
+    status.textContent = "✅ Image accepted. Scan recorded.";
     status.className = "msg success";
   };
 
