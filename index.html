@@ -386,11 +386,12 @@
 </head>
 <body>
 
-<div id="header" class="header" style="display:none;">
+<div id="header" class="header">
   <div class="logo">Verifly</div>
   <div class="user-menu">
     <span class="user-email" id="headerEmail"></span>
-    <button class="logout-btn" id="headerLogout">Sign Out</button>
+    <button class="logout-btn" id="headerLogout" style="display:none;">Sign Out</button>
+    <button class="logout-btn" id="headerLogin" onclick="showAuth()">Sign In</button>
   </div>
 </div>
 
