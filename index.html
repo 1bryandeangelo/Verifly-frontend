@@ -5,7 +5,6 @@
   <title>Verifly</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -77,7 +76,6 @@
     <div id="status" class="msg"></div>
   </div>
 
-  <!-- AUTH MODAL -->
   <div class="modal" id="authModal">
     <div class="modal-box">
       <h3 id="authTitle">Create account</h3>
@@ -98,9 +96,6 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* =========================
-     SUPABASE (ANON KEY)
-     ========================= */
   const supabase = window.supabase.createClient(
     "https://tfkwctmewgsolcaphsbp.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg"
@@ -139,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
   authBtn.onclick = async () => {
     authMsg.textContent = "";
 
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
     if (password.length < 8) {
@@ -158,16 +153,31 @@ document.addEventListener("DOMContentLoaded", () => {
         status.textContent = "Signed in successfully.";
         status.className = "msg success";
       }
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        authMsg.textContent = error.message;
-        authMsg.className = "msg error";
-      } else {
-        authMsg.textContent = "Check your email to confirm your account.";
-        authMsg.className = "msg success";
-      }
+      return;
     }
+
+    // 🔑 SIGN-UP FLOW WITH EXISTING ACCOUNT DETECTION
+    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+      authMsg.textContent = error.message;
+      authMsg.className = "msg error";
+      return;
+    }
+
+    // If no identities were created, account already exists
+    if (data.user && data.user.identities.length === 0) {
+      authMsg.textContent = "Account already exists. Please sign in.";
+      authMsg.className = "msg error";
+      isLogin = true;
+      authTitle.textContent = "Sign in";
+      authBtn.textContent = "Sign in";
+      toggleAuth.textContent = "Need an account? Create one";
+      return;
+    }
+
+    authMsg.textContent = "Check your email to confirm your account.";
+    authMsg.className = "msg success";
   };
 
   runScanBtn.onclick = async () => {
@@ -188,13 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    if (res.status === 401) {
-      status.textContent = "Session expired. Please sign in again.";
-      status.className = "msg error";
-      await supabase.auth.signOut();
-      return;
-    }
-
     if (res.status === 403) {
       status.textContent = "Free scan already used. Upgrade required.";
       status.className = "msg error";
@@ -207,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    status.textContent = "✅ Free scan unlocked (next step: AI hookup)";
+    status.textContent = "✅ Free scan unlocked";
     status.className = "msg success";
   };
 
