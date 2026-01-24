@@ -165,66 +165,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  runScanBtn.onclick = async () => {
-    status.textContent = "";
+  authBtn.onclick = async () => {
+  authMsg.textContent = "";
+  authMsg.className = "msg";
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      openAuth();
-      return;
-    }
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
 
-    if (!imageInput.files.length) {
-      status.textContent = "Select an image first.";
-      status.className = "msg error";
-      return;
-    }
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
 
-    status.textContent = "Uploading image…";
+  if (!email || !password) {
+    authMsg.textContent = "Email and password are required.";
+    authMsg.className = "msg error";
+    return;
+  }
 
-    const file = imageInput.files[0];
-    const path = `${session.user.id}/${Date.now()}-${file.name}`;
+  if (password.length < 8) {
+    authMsg.textContent = "Password must be at least 8 characters.";
+    authMsg.className = "msg error";
+    return;
+  }
 
-    const { error: uploadError } = await supabase
-      .storage.from("scans")
-      .upload(path, file);
+  authMsg.textContent = isLogin
+    ? "Signing in…"
+    : "Creating account…";
 
-    if (uploadError) {
-      status.textContent = "Upload failed.";
-      status.className = "msg error";
-      return;
-    }
+  let result;
 
-    const { data: urlData } = supabase
-      .storage.from("scans")
-      .getPublicUrl(path);
+  if (isLogin) {
+    result = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+  } else {
+    result = await supabase.auth.signUp({
+      email,
+      password
+    });
+  }
 
-    status.textContent = "Analyzing image…";
+  const { data, error } = result;
 
-    const res = await fetch(
-      "https://verify-backend-rzx1.onrender.com/scan",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ imageUrl: urlData.publicUrl })
-      }
-    );
+  if (error) {
+    authMsg.textContent = error.message;
+    authMsg.className = "msg error";
+    return;
+  }
 
-    const data = await res.json();
+  if (!isLogin) {
+    authMsg.textContent =
+      "Account created. Check your email to confirm.";
+    authMsg.className = "msg success";
+    return;
+  }
 
-    if (!res.ok) {
-      status.textContent = data.error || "Scan failed.";
-      status.className = "msg error";
-      return;
-    }
-
-    status.textContent =
-      `Result: ${Math.round(data.ai_probability * 100)}% likely AI-generated`;
-    status.className = "msg success";
-  };
+  // Login success
+  closeAuth();
+  status.textContent = "Signed in successfully.";
+  status.className = "msg success";
+};
 
 });
 </script>
