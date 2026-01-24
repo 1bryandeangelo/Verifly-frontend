@@ -165,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // ✅ FINAL SCAN FLOW (BACKEND GATED)
   runScanBtn.onclick = async () => {
     status.textContent = "";
 
@@ -175,34 +176,36 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!session.user.email_confirmed_at) {
-      status.textContent = "Please confirm your email first.";
+    const accessToken = session.access_token;
+
+    const res = await fetch("https://verify-backend-rzx1.onrender.com/scan", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (res.status === 401) {
+      status.textContent = "Session expired. Please sign in again.";
+      status.className = "msg error";
+      await supabase.auth.signOut();
+      return;
+    }
+
+    if (res.status === 403) {
+      status.textContent = "Free scan already used. Upgrade required.";
       status.className = "msg error";
       return;
     }
 
-    const userId = session.user.id;
-
-    const { data: scans, error } = await supabase
-      .from("scans")
-      .select("id")
-      .eq("user_id", userId);
-
-    if (error) {
-      status.textContent = "Something went wrong. Try again.";
+    if (!res.ok) {
+      status.textContent = "Scan failed. Try again.";
       status.className = "msg error";
       return;
     }
 
-    if (scans.length >= 1) {
-      status.textContent = "Free scan already used. Upgrade to continue.";
-      status.className = "msg error";
-      return;
-    }
-
-    await supabase.from("scans").insert({ user_id: userId });
-
-    status.textContent = "Free scan unlocked. (Next: AI scan)";
+    status.textContent = "✅ Free scan unlocked (backend gate passed)";
     status.className = "msg success";
   };
 
@@ -211,55 +214,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-
-<script>
-  async function runFreeScan() {
-    try {
-      // 1️⃣ Get current session
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error || !session) {
-        alert("Please sign in to run a scan.");
-        return;
-      }
-
-      const accessToken = session.access_token;
-
-      // 2️⃣ Call backend scan gate
-      const res = await fetch("https://verify-backend-rzx1.onrender.com", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      // 3️⃣ Handle responses
-      if (res.status === 401) {
-        alert("Session expired. Please sign in again.");
-        await supabase.auth.signOut();
-        return;
-      }
-
-      if (res.status === 403) {
-        alert("Free scan already used. Upgrade required.");
-        return;
-      }
-
-      if (!res.ok) {
-        alert("Scan failed. Try again.");
-        return;
-      }
-
-      const data = await res.json();
-
-      if (data.allowed) {
-        alert("✅ Free scan unlocked (next step: AI hookup)");
-      }
-
-    } catch (err) {
-      console.error(err);
-      alert("Unexpected error");
-    }
-  }
-</script>
