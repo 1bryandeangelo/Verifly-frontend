@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const res = await fetch(`${BACKEND_URL}/scan`, {
+    const res = await fetch("https://verify-backend-rzx1.onrender.com/scan", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${session.access_token}`,
