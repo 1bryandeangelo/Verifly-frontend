@@ -51,10 +51,6 @@
       border-color: white;
       background: rgba(255,255,255,0.1);
     }
-    .upload-area.dragover {
-      border-color: #4ade80;
-      background: rgba(74,222,128,0.2);
-    }
     input[type="file"] {
       display: none;
     }
@@ -92,10 +88,6 @@
       background: rgba(34, 197, 94, 0.2);
       border: 1px solid #22c55e;
     }
-    .info {
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid #3b82f6;
-    }
     .result-card {
       background: rgba(255,255,255,0.15);
       border-radius: 12px;
@@ -131,25 +123,6 @@
       border-radius: 8px;
       margin-top: 10px;
     }
-
-    /* Modal */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-box {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 20px;
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
     .modal input {
       width: 100%;
       padding: 14px;
@@ -184,16 +157,12 @@
 <body>
 
 <div class="container" id="mainApp" style="display:none;">
-  <h1>🔍 Verifly</h1>
+  <h1>Verifly</h1>
   <p class="subtitle">AI-Generated Content Detection</p>
-
   <div class="user-info" id="userInfo"></div>
-
+  
   <div class="upload-area" id="uploadArea">
     <div id="uploadPrompt">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin: 0 auto 10px;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-      </svg>
       <p style="margin: 10px 0;">Click or drag file here</p>
       <p style="margin: 5px 0; font-size: 12px; opacity: 0.8;">Images, audio, or video files</p>
     </div>
@@ -201,11 +170,8 @@
   </div>
 
   <input type="file" id="fileInput" accept="image/*,audio/*,video/*" />
-
   <button id="scanBtn" disabled>Select a file to scan</button>
-
   <button class="sign-out-btn" id="signOutBtn">Sign Out</button>
-
   <div id="status"></div>
   
   <div id="resultCard" class="result-card" style="display:none;">
@@ -215,19 +181,18 @@
   </div>
 </div>
 
-<!-- Auth Modal -->
-<div class="modal" id="authModal">
-  <div class="modal-box">
-    <h2 id="authTitle" style="margin-top:0;">Create Account</h2>
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password (8+ characters)" />
-    <button id="authBtn" style="margin-top:20px;">Continue</button>
-    <div class="link" id="toggleAuth">Already have an account? Sign in</div>
-    <div id="authMsg" class="msg" style="display:none;"></div>
-  </div>
+<div class="container" id="authModal">
+  <h2 id="authTitle" style="margin-top:0;">Create Account</h2>
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password (8+ characters)" />
+  <button id="authBtn" style="margin-top:20px;">Continue</button>
+  <div class="link" id="toggleAuth">Already have an account? Sign in</div>
+  <div id="authMsg" class="msg" style="display:none;"></div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+  
 const supabase = window.supabase.createClient(
   "https://tfkwctmewgsolcaphsbp.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg"
@@ -238,7 +203,6 @@ const BACKEND_URL = "https://verify-backend-rzx1.onrender.com";
 let selectedFile = null;
 let isLogin = false;
 
-// Elements
 const mainApp = document.getElementById("mainApp");
 const authModal = document.getElementById("authModal");
 const uploadArea = document.getElementById("uploadArea");
@@ -250,8 +214,6 @@ const status = document.getElementById("status");
 const resultCard = document.getElementById("resultCard");
 const userInfo = document.getElementById("userInfo");
 const signOutBtn = document.getElementById("signOutBtn");
-
-// Auth elements
 const authBtn = document.getElementById("authBtn");
 const toggleAuth = document.getElementById("toggleAuth");
 const authTitle = document.getElementById("authTitle");
@@ -259,52 +221,34 @@ const authMsg = document.getElementById("authMsg");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
-// Check session on load
-(async () => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      showMainApp(session.user);
-    } else {
-      showAuth();
-    }
-  } catch (error) {
-    console.error("Auth check failed:", error);
-    showAuth(); // Show auth modal even if there's an error
-  }
-})();
-
-// Fallback: If nothing shows after 2 seconds, display auth modal
-setTimeout(() => {
-  if (authModal.style.display === "none" && mainApp.style.display === "none") {
+supabase.auth.getSession().then(function(response) {
+  if (response.data.session) {
+    showMainApp(response.data.session.user);
+  } else {
     showAuth();
   }
-}, 2000);
+});
 
 function showAuth() {
   mainApp.style.display = "none";
-  authModal.style.display = "flex";
+  authModal.style.display = "block";
 }
 
 function showMainApp(user) {
   authModal.style.display = "none";
   mainApp.style.display = "block";
-  userInfo.innerHTML = `Logged in as: <strong>${user.email}</strong>`;
+  userInfo.innerHTML = "Logged in as: <strong>" + user.email + "</strong>";
 }
 
-// Auth toggle
-toggleAuth.onclick = () => {
+toggleAuth.onclick = function() {
   isLogin = !isLogin;
   authTitle.textContent = isLogin ? "Sign In" : "Create Account";
   authBtn.textContent = isLogin ? "Sign In" : "Continue";
-  toggleAuth.textContent = isLogin
-    ? "Need an account? Create one"
-    : "Already have an account? Sign in";
+  toggleAuth.textContent = isLogin ? "Need an account? Create one" : "Already have an account? Sign in";
   authMsg.style.display = "none";
 };
 
-// Auth submit
-authBtn.onclick = async () => {
+authBtn.onclick = function() {
   const email = emailInput.value.trim();
   const password = passwordInput.value;
 
@@ -316,66 +260,52 @@ authBtn.onclick = async () => {
   }
 
   if (isLogin) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      authMsg.textContent = error.message;
-      authMsg.className = "msg error";
-      authMsg.style.display = "block";
-    } else {
-      const { data: { user } } = await supabase.auth.getUser();
-      showMainApp(user);
-    }
+    supabase.auth.signInWithPassword({ email: email, password: password }).then(function(response) {
+      if (response.error) {
+        authMsg.textContent = response.error.message;
+        authMsg.className = "msg error";
+        authMsg.style.display = "block";
+      } else {
+        supabase.auth.getUser().then(function(userResponse) {
+          showMainApp(userResponse.data.user);
+        });
+      }
+    });
   } else {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      authMsg.textContent = error.message;
-      authMsg.className = "msg error";
+    supabase.auth.signUp({ email: email, password: password }).then(function(response) {
+      if (response.error) {
+        authMsg.textContent = response.error.message;
+        authMsg.className = "msg error";
+        authMsg.style.display = "block";
+        return;
+      }
+      if (response.data.user && response.data.user.identities.length === 0) {
+        authMsg.textContent = "Account exists. Please sign in.";
+        authMsg.className = "msg error";
+        authMsg.style.display = "block";
+        isLogin = true;
+        authTitle.textContent = "Sign In";
+        authBtn.textContent = "Sign In";
+        toggleAuth.textContent = "Need an account? Create one";
+        return;
+      }
+      authMsg.textContent = "Check your email to confirm your account.";
+      authMsg.className = "msg success";
       authMsg.style.display = "block";
-      return;
-    }
-    if (data.user && data.user.identities.length === 0) {
-      authMsg.textContent = "Account exists. Please sign in.";
-      authMsg.className = "msg error";
-      authMsg.style.display = "block";
-      isLogin = true;
-      authTitle.textContent = "Sign In";
-      authBtn.textContent = "Sign In";
-      toggleAuth.textContent = "Need an account? Create one";
-      return;
-    }
-    authMsg.textContent = "Check your email to confirm your account.";
-    authMsg.className = "msg success";
-    authMsg.style.display = "block";
+    });
   }
 };
 
-// Sign out
-signOutBtn.onclick = async () => {
-  await supabase.auth.signOut();
-  showAuth();
-  resetUI();
+signOutBtn.onclick = function() {
+  supabase.auth.signOut().then(function() {
+    showAuth();
+    resetUI();
+  });
 };
 
-// File upload handling
-uploadArea.onclick = () => fileInput.click();
+uploadArea.onclick = function() { fileInput.click(); };
 
-uploadArea.ondragover = (e) => {
-  e.preventDefault();
-  uploadArea.classList.add("dragover");
-};
-
-uploadArea.ondragleave = () => {
-  uploadArea.classList.remove("dragover");
-};
-
-uploadArea.ondrop = (e) => {
-  e.preventDefault();
-  uploadArea.classList.remove("dragover");
-  const file = e.dataTransfer.files[0];
-  if (file) handleFileSelect(file);
-};
-
-fileInput.onchange = (e) => {
+fileInput.onchange = function(e) {
   const file = e.target.files[0];
   if (file) handleFileSelect(file);
 };
@@ -386,12 +316,12 @@ function handleFileSelect(file) {
   filePreview.style.display = "block";
   
   const fileType = file.type.split('/')[0];
-  let previewHTML = `<strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+  let previewHTML = "<strong>" + file.name + "</strong> (" + (file.size / 1024 / 1024).toFixed(2) + " MB)";
   
   if (fileType === 'image') {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      filePreview.innerHTML = previewHTML + `<br><img src="${e.target.result}" />`;
+    reader.onload = function(e) {
+      filePreview.innerHTML = previewHTML + "<br><img src='" + e.target.result + "' />";
     };
     reader.readAsDataURL(file);
   } else {
@@ -404,8 +334,7 @@ function handleFileSelect(file) {
   resultCard.style.display = "none";
 }
 
-// Scan button
-scanBtn.onclick = async () => {
+scanBtn.onclick = function() {
   if (!selectedFile) return;
   
   scanBtn.disabled = true;
@@ -413,55 +342,54 @@ scanBtn.onclick = async () => {
   status.innerHTML = "";
   resultCard.style.display = "none";
   
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+  supabase.auth.getSession().then(function(sessionResponse) {
+    if (!sessionResponse.data.session) {
       showAuth();
       return;
     }
 
-    // Create FormData with file
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    const res = await fetch(`${BACKEND_URL}/scan`, {
+    fetch(BACKEND_URL + "/scan", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${session.access_token}`
+        "Authorization": "Bearer " + sessionResponse.data.session.access_token
       },
       body: formData
-    });
+    }).then(function(res) {
+      return res.json().then(function(data) {
+        return { status: res.status, data: data };
+      });
+    }).then(function(result) {
+      if (result.status === 401) {
+        status.innerHTML = '<div class="msg error">Session expired. Please sign in again.</div>';
+        supabase.auth.signOut();
+        showAuth();
+        return;
+      }
 
-    const data = await res.json();
+      if (result.status === 403) {
+        status.innerHTML = '<div class="msg error">Free scan already used. Upgrade to continue</div>';
+        scanBtn.textContent = "Analyze File";
+        scanBtn.disabled = false;
+        return;
+      }
 
-    if (res.status === 401) {
-      status.innerHTML = '<div class="msg error">Session expired. Please sign in again.</div>';
-      await supabase.auth.signOut();
-      showAuth();
-      return;
-    }
+      if (result.status !== 200) {
+        throw new Error(result.data.error || "Scan failed");
+      }
 
-    if (res.status === 403) {
-      status.innerHTML = '<div class="msg error">Free scan already used. <a href="#" style="color:white;text-decoration:underline;">Upgrade to continue</a></div>';
+      displayResults(result.data);
+      scanBtn.textContent = "Scan Complete";
+      
+    }).catch(function(err) {
+      console.error(err);
+      status.innerHTML = '<div class="msg error">Error: ' + err.message + '</div>';
       scanBtn.textContent = "Analyze File";
       scanBtn.disabled = false;
-      return;
-    }
-
-    if (!res.ok) {
-      throw new Error(data.error || "Scan failed");
-    }
-
-    // Show results
-    displayResults(data);
-    scanBtn.textContent = "Scan Complete ✓";
-    
-  } catch (err) {
-    console.error(err);
-    status.innerHTML = `<div class="msg error">Error: ${err.message}</div>`;
-    scanBtn.textContent = "Analyze File";
-    scanBtn.disabled = false;
-  }
+    });
+  });
 };
 
 function displayResults(data) {
@@ -475,11 +403,11 @@ function displayResults(data) {
   
   if (data.isAI) {
     scoreEl.style.color = "#ef4444";
-    verdictEl.textContent = "⚠️ Likely AI-Generated";
+    verdictEl.textContent = "Likely AI-Generated";
     verdictEl.style.color = "#ef4444";
   } else {
     scoreEl.style.color = "#22c55e";
-    verdictEl.textContent = "✓ Likely Human-Made";
+    verdictEl.textContent = "Likely Human-Made";
     verdictEl.style.color = "#22c55e";
   }
   
@@ -497,6 +425,8 @@ function resetUI() {
   resultCard.style.display = "none";
   fileInput.value = "";
 }
+
+});
 </script>
 
 </body>
