@@ -5,7 +5,6 @@
   <title>Verifly</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -72,36 +71,34 @@
 
 <body>
 
-  <div>
-    <input type="file" id="imageInput" accept="image/*" />
-    <button id="runScanBtn">Run Free Scan</button>
-    <div id="status" class="msg"></div>
-  </div>
+<div>
+  <button id="runScanBtn">Run Free Scan</button>
+  <div id="status" class="msg"></div>
+</div>
 
-  <!-- AUTH MODAL -->
-  <div class="modal" id="authModal">
-    <div class="modal-box">
-      <h3 id="authTitle">Create account</h3>
+<div class="modal" id="authModal">
+  <div class="modal-box">
+    <h3 id="authTitle">Create account</h3>
 
-      <input id="email" type="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password (8+ chars)" />
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password (8+ chars)" />
 
-      <button id="authBtn" style="margin-top:14px;">Continue</button>
+    <button id="authBtn" style="margin-top:14px;">Continue</button>
 
-      <div class="link" id="toggleAuth">
-        Already have an account? Sign in
-      </div>
-
-      <div id="authMsg" class="msg"></div>
+    <div class="link" id="toggleAuth">
+      Already have an account? Sign in
     </div>
+
+    <div id="authMsg" class="msg"></div>
   </div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
   const supabase = window.supabase.createClient(
     "https://tfkwctmewgsolcaphsbp.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg"
+    "YOUR_PUBLIC_ANON_KEY"
   );
 
   const runScanBtn = document.getElementById("runScanBtn");
@@ -166,50 +163,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // ✅ FINAL SCAN FLOW (BACKEND GATED)
-runScanBtn.onclick = async () => {
-  status.textContent = "";
+  runScanBtn.onclick = async () => {
+    status.textContent = "";
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    openAuth();
-    return;
-  }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      openAuth();
+      return;
+    }
 
-  const fileInput = document.getElementById("imageInput");
-  if (!fileInput.files.length) {
-    status.textContent = "Please select an image.";
-    status.className = "msg error";
-    return;
-  }
+    const res = await fetch(
+      "https://verify-backend-rzx1.onrender.com/scan",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      }
+    );
 
-  const formData = new FormData();
-  formData.append("image", fileInput.files[0]);
+    if (res.status === 403) {
+      status.textContent = "Free scan already used. Upgrade required.";
+      status.className = "msg error";
+      return;
+    }
 
-  const res = await fetch("https://verify-backend-rzx1.onrender.com/scan", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${session.access_token}`
-    },
-    body: formData
-  });
+    if (!res.ok) {
+      status.textContent = "Scan failed.";
+      status.className = "msg error";
+      return;
+    }
 
-  if (res.status === 403) {
-    status.textContent = "Free scan already used.";
-    status.className = "msg error";
-    return;
-  }
-
-  if (!res.ok) {
-    status.textContent = "Scan failed.";
-    status.className = "msg error";
-    return;
-  }
-
-  const data = await res.json();
-  status.textContent = data.message;
-  status.className = "msg success";
-};
+    status.textContent = "✅ Free scan allowed";
+    status.className = "msg success";
+  };
 
 });
 </script>
