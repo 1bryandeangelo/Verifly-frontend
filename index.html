@@ -259,15 +259,27 @@ const authMsg = document.getElementById("authMsg");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
-// Check session on load
+// Check session on load// Check session on load
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    showMainApp(session.user);
-  } else {
-    showAuth();
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      showMainApp(session.user);
+    } else {
+      showAuth();
+    }
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    showAuth(); // Show auth modal even if there's an error
   }
 })();
+
+// Fallback: If nothing shows after 2 seconds, display auth modal
+setTimeout(() => {
+  if (authModal.style.display === "none" && mainApp.style.display === "none") {
+    showAuth();
+  }
+}, 2000);
 
 function showAuth() {
   mainApp.style.display = "none";
