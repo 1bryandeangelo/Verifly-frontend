@@ -86,7 +86,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 <div class="modal" id="modal">
 <div class="modal-box">
-<h2 id="modalTitle">Sign In</h2>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h2 id="modalTitle" style="margin:0;">Sign In</h2>
+<button onclick="document.getElementById('modal').style.display='none'" style="width:auto;padding:8px 12px;background:#f1f5f9;color:#475569;">✕</button>
+</div>
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password (8+ characters)">
 <button id="authBtn">Continue</button>
