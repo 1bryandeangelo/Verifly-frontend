@@ -1,258 +1,545 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Verifly - AI Detection</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://js.stripe.com/v3/"></script>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; background: #f8fafc; }
-.hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 20px; text-align: center; }
-.hero h1 { font-size: 48px; margin-bottom: 20px; font-weight: 700; }
-.hero p { font-size: 20px; opacity: 0.95; max-width: 600px; margin: 0 auto 40px; }
-.upload-section { max-width: 600px; margin: -50px auto 80px; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-.upload-area { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; background: #f8fafc; }
-.upload-area:hover { border-color: #667eea; background: #f1f5f9; }
-input[type="file"] { display: none; }
-button { width: 100%; padding: 16px; font-size: 16px; border-radius: 12px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; font-weight: 600; transition: transform 0.2s, opacity 0.2s; }
-button:hover:not(:disabled) { transform: translateY(-2px); }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.file-preview { margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px; font-size: 14px; }
-.file-preview img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
-.result-card { background: #f8fafc; border-radius: 12px; padding: 30px; margin-top: 20px; text-align: center; }
-.result-score { font-size: 64px; font-weight: bold; margin: 20px 0; }
-.result-verdict { font-size: 24px; font-weight: 600; margin-top: 10px; }
-.section { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
-.section h2 { font-size: 42px; text-align: center; margin-bottom: 20px; font-weight: 700; }
-.section-subtitle { text-align: center; font-size: 18px; color: #64748b; margin-bottom: 60px; max-width: 700px; margin-left: auto; margin-right: auto; }
-.trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 40px; }
-.trust-card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; transition: transform 0.3s; }
-.trust-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
-.trust-icon { font-size: 48px; margin-bottom: 20px; }
-.trust-card h3 { font-size: 20px; margin-bottom: 10px; color: #1e293b; }
-.trust-card p { color: #64748b; line-height: 1.6; }
-.steps { display: flex; justify-content: space-around; gap: 40px; margin-top: 60px; flex-wrap: wrap; }
-.step { flex: 1; min-width: 250px; text-align: center; }
-.step-number { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin: 0 auto 20px; }
-.step h3 { font-size: 24px; margin-bottom: 10px; }
-.step p { color: #64748b; line-height: 1.6; }
-.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 60px; }
-.pricing-card { background: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; position: relative; transition: transform 0.3s; }
-.pricing-card:hover { transform: translateY(-10px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
-.pricing-card.featured { border: 3px solid #667eea; }
-.badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #667eea; color: white; padding: 5px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; }
-.plan-name { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
-.plan-price { font-size: 48px; font-weight: 700; color: #667eea; margin-bottom: 5px; }
-.plan-price small { font-size: 18px; color: #64748b; }
-.plan-features { list-style: none; margin: 30px 0; text-align: left; }
-.plan-features li { padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #475569; }
-.plan-features li:before { content: "✓"; color: #22c55e; font-weight: bold; margin-right: 10px; }
-.buy-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 40px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; width: auto; display: inline-block; }
-.buy-btn:hover { transform: translateY(-2px); }
-.msg { padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; margin-top: 15px; }
-.error { background: #fef2f2; border: 1px solid #ef4444; color: #dc2626; }
-.success { background: #f0fdf4; border: 1px solid #22c55e; color: #16a34a; }
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-.modal-box { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-.modal h2 { margin-bottom: 20px; color: #1e293b; }
-.modal input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 15px; }
-.link { margin-top: 16px; font-size: 14px; color: #667eea; cursor: pointer; text-align: center; text-decoration: underline; display: block; }
-.header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-.logo { font-size: 24px; font-weight: 700; color: #667eea; }
-.user-menu { display: flex; gap: 15px; align-items: center; }
-.user-email { font-size: 14px; color: #64748b; }
-.header-btn { padding: 8px 20px; background: #667eea; color: white; border-radius: 8px; font-size: 14px; width: auto; border: none; cursor: pointer; font-weight: 600; }
-.logout-btn { padding: 8px 20px; background: #f1f5f9; color: #475569; border-radius: 8px; font-size: 14px; width: auto; }
-.main-content { margin-top: 60px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Verifly - AI Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; background: #f8fafc; }
+    .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 20px; text-align: center; }
+    .hero h1 { font-size: 48px; margin-bottom: 20px; font-weight: 700; }
+    .hero p { font-size: 20px; opacity: 0.95; max-width: 600px; margin: 0 auto 40px; }
+    .upload-section { max-width: 600px; margin: -50px auto 80px; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .upload-area { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; background: #f8fafc; }
+    .upload-area:hover { border-color: #667eea; background: #f1f5f9; }
+    input[type="file"] { display: none; }
+    button { width: 100%; padding: 16px; font-size: 16px; border-radius: 12px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; font-weight: 600; transition: transform 0.2s, opacity 0.2s; }
+    button:hover:not(:disabled) { transform: translateY(-2px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .file-preview { margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px; font-size: 14px; }
+    .file-preview img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; }
+    .result-card { background: #f8fafc; border-radius: 12px; padding: 30px; margin-top: 20px; text-align: center; }
+    .result-score { font-size: 64px; font-weight: bold; margin: 20px 0; }
+    .result-verdict { font-size: 24px; font-weight: 600; margin-top: 10px; }
+    .section { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
+    .section h2 { font-size: 42px; text-align: center; margin-bottom: 20px; font-weight: 700; }
+    .section-subtitle { text-align: center; font-size: 18px; color: #64748b; margin-bottom: 60px; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 40px; }
+    .trust-card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; transition: transform 0.3s; }
+    .trust-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    .trust-icon { font-size: 48px; margin-bottom: 20px; }
+    .trust-card h3 { font-size: 20px; margin-bottom: 10px; color: #1e293b; }
+    .trust-card p { color: #64748b; line-height: 1.6; }
+    .steps { display: flex; justify-content: space-around; gap: 40px; margin-top: 60px; flex-wrap: wrap; }
+    .step { flex: 1; min-width: 250px; text-align: center; }
+    .step-number { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin: 0 auto 20px; }
+    .step h3 { font-size: 24px; margin-bottom: 10px; }
+    .step p { color: #64748b; line-height: 1.6; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 60px; }
+    .pricing-card { background: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; position: relative; transition: transform 0.3s; }
+    .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+    .pricing-card.featured { border: 3px solid #667eea; }
+    .badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #667eea; color: white; padding: 5px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .plan-name { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+    .plan-price { font-size: 48px; font-weight: 700; color: #667eea; margin-bottom: 5px; }
+    .plan-price small { font-size: 18px; color: #64748b; }
+    .plan-features { list-style: none; margin: 30px 0; text-align: left; }
+    .plan-features li { padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #475569; }
+    .plan-features li:before { content: "✓"; color: #22c55e; font-weight: bold; margin-right: 10px; }
+    .buy-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 40px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; width: auto; display: inline-block; }
+    .buy-btn:hover { transform: translateY(-2px); }
+    .msg { padding: 12px; border-radius: 8px; font-size: 14px; text-align: center; margin-top: 15px; }
+    .error { background: #fef2f2; border: 1px solid #ef4444; color: #dc2626; }
+    .success { background: #f0fdf4; border: 1px solid #22c55e; color: #16a34a; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-box { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal h2 { margin-bottom: 20px; color: #1e293b; }
+    .modal input { width: 100%; padding: 14px; margin-top: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 15px; }
+    .link { margin-top: 16px; font-size: 14px; color: #667eea; cursor: pointer; text-align: center; text-decoration: underline; display: block; }
+    .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+    .user-menu { display: flex; gap: 15px; align-items: center; }
+    .user-email { font-size: 14px; color: #64748b; }
+    .header-btn { padding: 8px 20px; background: #667eea; color: white; border-radius: 8px; font-size: 14px; width: auto; border: none; cursor: pointer; font-weight: 600; }
+    .logout-btn { padding: 8px 20px; background: #f1f5f9; color: #475569; border-radius: 8px; font-size: 14px; width: auto; }
+    .main-content { margin-top: 60px; }
+  </style>
 </head>
 <body>
 
 <div class="header">
-<div class="logo">Verifly</div>
-<div class="user-menu">
-<span class="user-email" id="headerEmail"></span>
-<button class="header-btn" id="headerSignIn">Sign In</button>
-<button class="logout-btn" id="headerLogout" style="display:none;">Sign Out</button>
-</div>
+  <div class="logo">Verifly</div>
+  <div class="user-menu">
+    <span class="user-email" id="headerEmail"></span>
+    <button class="header-btn" id="headerSignIn">Sign In</button>
+    <button class="logout-btn" id="headerLogout" style="display:none;">Sign Out</button>
+  </div>
 </div>
 
 <div class="main-content">
-<div class="hero">
-<h1>Verify What's Real</h1>
-<p>AI-powered detection to identify AI-generated images, audio, and video</p>
-</div>
+  <div class="hero">
+    <h1>Verify What's Real</h1>
+    <p>AI-powered detection to identify AI-generated images, audio, and video</p>
+  </div>
 
-<div class="upload-section">
-<div class="upload-area" id="uploadArea">
-<div id="uploadPrompt">
-<p style="font-size: 18px; margin-bottom: 10px;">Drop your file here or click to upload</p>
-<p style="font-size: 14px; color: #64748b;">Supports images, audio, and video files</p>
-</div>
-<div id="filePreview" class="file-preview" style="display:none;"></div>
-</div>
-<input type="file" id="fileInput" accept="image/*,audio/*,video/*">
-<button id="scanBtn" disabled>Select a file to scan</button>
-<div id="status"></div>
-<div class="result-card" id="resultCard" style="display:none;">
-<div style="font-size: 16px; color: #64748b; margin-bottom: 10px;">AI Detection Confidence</div>
-<div class="result-score" id="resultScore">--</div>
-<div class="result-verdict" id="resultVerdict"></div>
-</div>
-</div>
+  <div class="upload-section">
+    <div class="upload-area" id="uploadArea">
+      <div id="uploadPrompt">
+        <p style="font-size: 18px; margin-bottom: 10px;">Drop your file here or click to upload</p>
+        <p style="font-size: 14px; color: #64748b;">Supports images, audio, and video files</p>
+      </div>
+      <div id="filePreview" class="file-preview" style="display:none;"></div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,audio/*,video/*">
+    <button id="scanBtn" disabled>Select a file to scan</button>
+    <div id="status"></div>
+    <div class="result-card" id="resultCard" style="display:none;">
+      <div style="font-size: 16px; color: #64748b; margin-bottom: 10px;">AI Detection Confidence</div>
+      <div class="result-score" id="resultScore">--</div>
+      <div class="result-verdict" id="resultVerdict"></div>
+    </div>
+  </div>
 
-<div class="section" style="background: white;">
-<h2>THE INTERNET IS GETTING HARDER TO TRUST</h2>
-<p class="section-subtitle">AI-generated content is everywhere. Protect yourself from deception.</p>
-<div class="trust-grid">
-<div class="trust-card">
-<div class="trust-icon">🖼️</div>
-<h3>Fake Images</h3>
-<p>Deepfakes and AI-generated photos are flooding social media.</p>
-</div>
-<div class="trust-card">
-<div class="trust-icon">🛍️</div>
-<h3>Fraudulent Listings</h3>
-<p>AI-generated product images that don't match reality.</p>
-</div>
-<div class="trust-card">
-<div class="trust-icon">💘</div>
-<h3>Dating Scams</h3>
-<p>Romance scammers use AI-generated profile pictures.</p>
-</div>
-<div class="trust-card">
-<div class="trust-icon">📰</div>
-<h3>Misinformation</h3>
-<p>Fake news with AI-generated images spread false narratives.</p>
-</div>
-</div>
-</div>
+  <div class="section" style="background: white;">
+    <h2>THE INTERNET IS GETTING HARDER TO TRUST</h2>
+    <p class="section-subtitle">AI-generated content is everywhere. Protect yourself from deception.</p>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon">🖼️</div>
+        <h3>Fake Images</h3>
+        <p>Deepfakes and AI-generated photos are flooding social media.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🛍️</div>
+        <h3>Fraudulent Listings</h3>
+        <p>AI-generated product images that don't match reality.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">💘</div>
+        <h3>Dating Scams</h3>
+        <p>Romance scammers use AI-generated profile pictures.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">📰</div>
+        <h3>Misinformation</h3>
+        <p>Fake news with AI-generated images spread false narratives.</p>
+      </div>
+    </div>
+  </div>
 
-<div class="section">
-<h2>HOW IT WORKS</h2>
-<p class="section-subtitle">Detect AI-generated content in three simple steps</p>
-<div class="steps">
-<div class="step">
-<div class="step-number">1</div>
-<h3>Upload</h3>
-<p>Drag and drop or click to upload your file.</p>
-</div>
-<div class="step">
-<div class="step-number">2</div>
-<h3>Scan</h3>
-<p>Our AI analyzes your file using advanced algorithms.</p>
-</div>
-<div class="step">
-<div class="step-number">3</div>
-<h3>Results</h3>
-<p>Get instant results showing likelihood of AI generation.</p>
-</div>
-</div>
-</div>
+  <div class="section">
+    <h2>HOW IT WORKS</h2>
+    <p class="section-subtitle">Detect AI-generated content in three simple steps</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Upload</h3>
+        <p>Drag and drop or click to upload your file.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Scan</h3>
+        <p>Our AI analyzes your file using advanced algorithms.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Results</h3>
+        <p>Get instant results showing likelihood of AI generation.</p>
+      </div>
+    </div>
+  </div>
 
-<div class="section" style="background: white;">
-<h2>PRICING</h2>
-<p class="section-subtitle">Choose the plan that fits your needs</p>
-<div class="pricing-grid">
-<div class="pricing-card">
-<div class="plan-name">Free Trial</div>
-<div class="plan-price">$0</div>
-<ul class="plan-features">
-<li>1 free scan</li>
-<li>Image detection only</li>
-<li>Instant results</li>
-</ul>
-<button class="buy-btn" id="tryNowBtn">Try Now</button>
-</div>
-<div class="pricing-card">
-<div class="plan-name">Pay Per Scan</div>
-<div class="plan-price">$1.99</div>
-<ul class="plan-features">
-<li>Single scan purchase</li>
-<li>Image detection</li>
-<li>No subscription needed</li>
-</ul>
-<button class="buy-btn" id="buySingleBtn">Buy Scan</button>
-</div>
-<div class="pricing-card featured">
-<div class="badge">POPULAR</div>
-<div class="plan-name">Pro</div>
-<div class="plan-price">$7<small>/mo</small></div>
-<ul class="plan-features">
-<li>Unlimited image scans</li>
-<li>Priority processing</li>
-<li>Scan history</li>
-</ul>
-<button class="buy-btn" id="buyProBtn">Subscribe</button>
-</div>
-<div class="pricing-card">
-<div class="plan-name">Power</div>
-<div class="plan-price">$19<small>/mo</small></div>
-<ul class="plan-features">
-<li>Unlimited image scans</li>
-<li>Unlimited audio scans</li>
-<li>20 min video/month</li>
-<li>API access</li>
-</ul>
-<button class="buy-btn" id="buyPowerBtn">Subscribe</button>
-</div>
-</div>
-</div>
+  <div class="section" style="background: white;">
+    <h2>PRICING</h2>
+    <p class="section-subtitle">Choose the plan that fits your needs</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Free Trial</div>
+        <div class="plan-price">$0</div>
+        <ul class="plan-features">
+          <li>1 free scan</li>
+          <li>Image detection only</li>
+          <li>Instant results</li>
+        </ul>
+        <button class="buy-btn" id="tryNowBtn">Try Now</button>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Pay Per Scan</div>
+        <div class="plan-price">$1.99</div>
+        <ul class="plan-features">
+          <li>Single scan purchase</li>
+          <li>Image detection</li>
+          <li>No subscription needed</li>
+        </ul>
+        <button class="buy-btn" id="buySingleBtn">Buy Scan</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="badge">POPULAR</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$7<small>/mo</small></div>
+        <ul class="plan-features">
+          <li>Unlimited image scans</li>
+          <li>Priority processing</li>
+          <li>Scan history</li>
+        </ul>
+        <button class="buy-btn" id="buyProBtn">Subscribe</button>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Power</div>
+        <div class="plan-price">$19<small>/mo</small></div>
+        <ul class="plan-features">
+          <li>Unlimited image scans</li>
+          <li>Unlimited audio scans</li>
+          <li>20 min video/month</li>
+          <li>API access</li>
+        </ul>
+        <button class="buy-btn" id="buyPowerBtn">Subscribe</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="authModal">
-<div class="modal-box">
-<h2 id="authTitle">Create Account</h2>
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password (8+ characters)">
-<button id="authBtn" style="margin-top:20px;">Continue</button>
-<div class="link" id="toggleAuth">Already have an account? Sign in</div>
-<div class="msg" id="authMsg" style="display:none;"></div>
+  <div class="modal-box">
+    <h2 id="authTitle">Create Account</h2>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password (8+ characters)">
+    <button id="authBtn" style="margin-top:20px;">Continue</button>
+    <div class="link" id="toggleAuth">Already have an account? Sign in</div>
+    <div class="msg" id="authMsg" style="display:none;"></div>
+  </div>
 </div>
-</div>
 
-<script>
-var supabase = window.supabase.createClient("https://tfkwctmewgsolcaphsbp.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg");
-var stripe = Stripe('pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2');
-var BACKEND = "https://verify-backend-rzx1.onrender.com";
-var selectedFile = null;
-var isLogin = false;
-var currentUser = null;
+  <script>
+alert("JavaScript is loading!");
+    
+const supabase = window.supabase.createClient(
+  "https://tfkwctmewgsolcaphsbp.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg"
+);
 
-supabase.auth.getSession().then(function(r){if(r.data.session){currentUser=r.data.session.user;showLoggedIn();}});
+const stripe = Stripe('pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2');
+const BACKEND_URL = "https://verify-backend-rzx1.onrender.com";
 
-function showLoggedIn(){document.getElementById("headerEmail").textContent=currentUser.email;document.getElementById("headerEmail").style.display="block";document.getElementById("headerSignIn").style.display="none";document.getElementById("headerLogout").style.display="block";}
-function showLoggedOut(){document.getElementById("headerEmail").textContent="";document.getElementById("headerEmail").style.display="none";document.getElementById("headerSignIn").style.display="block";document.getElementById("headerLogout").style.display="none";}
+let selectedFile = null;
+let isLogin = false;
+let currentUser = null;
 
-document.getElementById("headerSignIn").onclick=function(){document.getElementById("authModal").style.display="flex";};
-document.getElementById("headerLogout").onclick=function(){supabase.auth.signOut().then(function(){currentUser=null;showLoggedOut();resetUI();});};
-document.getElementById("toggleAuth").onclick=function(){isLogin=!isLogin;document.getElementById("authTitle").textContent=isLogin?"Sign In":"Create Account";document.getElementById("authBtn").textContent=isLogin?"Sign In":"Continue";document.getElementById("toggleAuth").textContent=isLogin?"Need an account? Create one":"Already have an account? Sign in";document.getElementById("authMsg").style.display="none";};
+const headerEmail = document.getElementById("headerEmail");
+const headerSignIn = document.getElementById("headerSignIn");
+const headerLogout = document.getElementById("headerLogout");
+const authModal = document.getElementById("authModal");
+const uploadArea = document.getElementById("uploadArea");
+const fileInput = document.getElementById("fileInput");
+const uploadPrompt = document.getElementById("uploadPrompt");
+const filePreview = document.getElementById("filePreview");
+const scanBtn = document.getElementById("scanBtn");
+const status = document.getElementById("status");
+const resultCard = document.getElementById("resultCard");
+const authBtn = document.getElementById("authBtn");
+const toggleAuth = document.getElementById("toggleAuth");
+const authTitle = document.getElementById("authTitle");
+const authMsg = document.getElementById("authMsg");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 
-document.getElementById("authBtn").onclick=function(){var e=document.getElementById("email").value.trim();var p=document.getElementById("password").value;if(!e||p.length<8){document.getElementById("authMsg").textContent="Email required. Password must be 8+ characters.";document.getElementById("authMsg").className="msg error";document.getElementById("authMsg").style.display="block";return;}if(isLogin){supabase.auth.signInWithPassword({email:e,password:p}).then(function(r){if(r.error){document.getElementById("authMsg").textContent=r.error.message;document.getElementById("authMsg").className="msg error";document.getElementById("authMsg").style.display="block";}else{currentUser=r.data.user;document.getElementById("authModal").style.display="none";showLoggedIn();}});}else{supabase.auth.signUp({email:e,password:p}).then(function(r){if(r.error){document.getElementById("authMsg").textContent=r.error.message;document.getElementById("authMsg").className="msg error";document.getElementById("authMsg").style.display="block";return;}if(r.data.user&&r.data.user.identities.length===0){document.getElementById("authMsg").textContent="Account exists. Please sign in.";document.getElementById("authMsg").className="msg error";document.getElementById("authMsg").style.display="block";isLogin=true;document.getElementById("authTitle").textContent="Sign In";document.getElementById("authBtn").textContent="Sign In";document.getElementById("toggleAuth").textContent="Need an account? Create one";return;}document.getElementById("authMsg").textContent="Check your email to confirm your account.";document.getElementById("authMsg").className="msg success";document.getElementById("authMsg").style.display="block";});}};
+supabase.auth.getSession().then(function(r) {
+  if (r.data.session) {
+    currentUser = r.data.session.user;
+    showLoggedIn();
+  }
+});
 
-document.getElementById("uploadArea").onclick=function(){alert("Upload area clicked!");supabase.auth.getSession().then(function(r){alert("Session: "+!!r.data.session);if(!r.data.session){document.getElementById("authModal").style.display="flex";}else{document.getElementById("fileInput").click();}});};
+function showLoggedIn() {
+  headerEmail.textContent = currentUser.email;
+  headerEmail.style.display = "block";
+  headerSignIn.style.display = "none";
+  headerLogout.style.display = "block";
+}
 
+function showLoggedOut() {
+  headerEmail.textContent = "";
+  headerEmail.style.display = "none";
+  headerSignIn.style.display = "block";
+  headerLogout.style.display = "none";
+}
 
-document.getElementById("fileInput").onchange=function(e){var f=e.target.files[0];if(f){selectedFile=f;document.getElementById("uploadPrompt").style.display="none";document.getElementById("filePreview").style.display="block";var t=f.type.split('/')[0];var h="<strong>"+f.name+"</strong> ("+(f.size/1024/1024).toFixed(2)+" MB)";if(t==='image'){var reader=new FileReader();reader.onload=function(e){document.getElementById("filePreview").innerHTML=h+"<br><img src='"+e.target.result+"'>";};reader.readAsDataURL(f);}else{document.getElementById("filePreview").innerHTML=h;}document.getElementById("scanBtn").disabled=false;document.getElementById("scanBtn").textContent="Analyze File";document.getElementById("status").innerHTML="";document.getElementById("resultCard").style.display="none";}};
+headerSignIn.addEventListener('click', function() {
+  authModal.style.display = "flex";
+});
 
-document.getElementById("scanBtn").onclick=function(){if(!selectedFile)return;supabase.auth.getSession().then(function(s){if(!s.data.session){document.getElementById("authModal").style.display="flex";return;}document.getElementById("scanBtn").disabled=true;document.getElementById("scanBtn").textContent="Analyzing...";document.getElementById("status").innerHTML="";document.getElementById("resultCard").style.display="none";var fd=new FormData();fd.append('file',selectedFile);fetch(BACKEND+"/scan",{method:"POST",headers:{"Authorization":"Bearer "+s.data.session.access_token},body:fd}).then(function(res){return res.json().then(function(data){return{status:res.status,data:data};});}).then(function(result){if(result.status===401){document.getElementById("status").innerHTML='<div class="msg error">Session expired. Please sign in again.</div>';supabase.auth.signOut();currentUser=null;showLoggedOut();return;}if(result.status===403){document.getElementById("status").innerHTML='<div class="msg error">Free scan used. Scroll down to purchase more!</div>';document.getElementById("scanBtn").textContent="Analyze File";document.getElementById("scanBtn").disabled=false;return;}if(result.status!==200){throw new Error(result.data.error||"Scan failed");}displayResults(result.data);document.getElementById("scanBtn").textContent="Scan Complete";}).catch(function(err){document.getElementById("status").innerHTML='<div class="msg error">Error: '+err.message+'</div>';document.getElementById("scanBtn").textContent="Analyze File";document.getElementById("scanBtn").disabled=false;});});};
+headerLogout.addEventListener('click', function() {
+  supabase.auth.signOut().then(function() {
+    currentUser = null;
+    showLoggedOut();
+    resetUI();
+  });
+});
 
-function displayResults(data){document.getElementById("resultCard").style.display="block";var score=Math.round(data.aiScore*100);document.getElementById("resultScore").textContent=score+"%";if(data.isAI){document.getElementById("resultScore").style.color="#ef4444";document.getElementById("resultVerdict").textContent="Likely AI-Generated";document.getElementById("resultVerdict").style.color="#ef4444";}else{document.getElementById("resultScore").style.color="#22c55e";document.getElementById("resultVerdict").textContent="Likely Human-Made";document.getElementById("resultVerdict").style.color="#22c55e";}document.getElementById("status").innerHTML='<div class="msg success">Analysis complete!</div>';}
+toggleAuth.addEventListener('click', function() {
+  isLogin = !isLogin;
+  authTitle.textContent = isLogin ? "Sign In" : "Create Account";
+  authBtn.textContent = isLogin ? "Sign In" : "Continue";
+  toggleAuth.textContent = isLogin ? "Need an account? Create one" : "Already have an account? Sign in";
+  authMsg.style.display = "none";
+});
 
-function resetUI(){selectedFile=null;document.getElementById("uploadPrompt").style.display="block";document.getElementById("filePreview").style.display="none";document.getElementById("filePreview").innerHTML="";document.getElementById("scanBtn").disabled=true;document.getElementById("scanBtn").textContent="Select a file to scan";document.getElementById("status").innerHTML="";document.getElementById("resultCard").style.display="none";document.getElementById("fileInput").value="";}
+authBtn.addEventListener('click', function() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
 
-document.getElementById("tryNowBtn").onclick=function(){document.querySelector('.upload-section').scrollIntoView({behavior:'smooth'});};
+  if (!email || password.length < 8) {
+    authMsg.textContent = "Email required. Password must be 8+ characters.";
+    authMsg.className = "msg error";
+    authMsg.style.display = "block";
+    return;
+  }
 
-document.getElementById("buySingleBtn").onclick=function(){alert("Buy button clicked!");supabase.auth.getSession().then(function(r){alert("Session: "+!!r.data.session);if(!r.data.session){
+  if (isLogin) {
+    supabase.auth.signInWithPassword({ email: email, password: password }).then(function(r) {
+      if (r.error) {
+        authMsg.textContent = r.error.message;
+        authMsg.className = "msg error";
+        authMsg.style.display = "block";
+      } else {
+        currentUser = r.data.user;
+        authModal.style.display = "none";
+        showLoggedIn();
+      }
+    });
+  } else {
+    supabase.auth.signUp({ email: email, password: password }).then(function(r) {
+      if (r.error) {
+        authMsg.textContent = r.error.message;
+        authMsg.className = "msg error";
+        authMsg.style.display = "block";
+        return;
+      }
+      if (r.data.user && r.data.user.identities.length === 0) {
+        authMsg.textContent = "Account exists. Please sign in.";
+        authMsg.className = "msg error";
+        authMsg.style.display = "block";
+        isLogin = true;
+        authTitle.textContent = "Sign In";
+        authBtn.textContent = "Sign In";
+        toggleAuth.textContent = "Need an account? Create one";
+        return;
+      }
+      authMsg.textContent = "Check your email to confirm your account.";
+      authMsg.className = "msg success";
+      authMsg.style.display = "block";
+    });
+  }
+});
 
+uploadArea.addEventListener('click', function() {
+  supabase.auth.getSession().then(function(r) {
+    if (!r.data.session) {
+      authModal.style.display = "flex";
+    } else {
+      fileInput.click();
+    }
+  });
+});
 
-document.getElementById("buyProBtn").onclick=function(){supabase.auth.getSession().then(function(r){if(!r.data.session){document.getElementById("authModal").style.display="flex";return;}fetch(BACKEND+"/create-checkout",{method:"POST",headers:{"Authorization":"Bearer "+r.data.session.access_token,"Content-Type":"application/json"},body:JSON.stringify({priceId:"price_1Srqvt6ILDOjliDIOBp0D9od",mode:"subscription"})}).then(function(res){return res.json();}).then(function(data){if(data.sessionId){stripe.redirectToCheckout({sessionId:data.sessionId});}else{alert("Error: "+(data.error||"Could not create checkout"));}}).catch(function(err){alert("Error: "+err.message);});});};
+fileInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) handleFileSelect(file);
+});
 
-document.getElementById("buyPowerBtn").onclick=function(){supabase.auth.getSession().then(function(r){if(!r.data.session){document.getElementById("authModal").style.display="flex";return;}fetch(BACKEND+"/create-checkout",{method:"POST",headers:{"Authorization":"Bearer "+r.data.session.access_token,"Content-Type":"application/json"},body:JSON.stringify({priceId:"price_1SrqwD6ILDOjliDIICrdtQr2",mode:"subscription"})}).then(function(res){return res.json();}).then(function(data){if(data.sessionId){stripe.redirectToCheckout({sessionId:data.sessionId});}else{alert("Error: "+(data.error||"Could not create checkout"));}}).catch(function(err){alert("Error: "+err.message);});});};
+function handleFileSelect(file) {
+  selectedFile = file;
+  uploadPrompt.style.display = "none";
+  filePreview.style.display = "block";
+  
+  const fileType = file.type.split('/')[0];
+  let previewHTML = "<strong>" + file.name + "</strong> (" + (file.size / 1024 / 1024).toFixed(2) + " MB)";
+  
+  if (fileType === 'image') {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      filePreview.innerHTML = previewHTML + "<br><img src='" + e.target.result + "'>";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    filePreview.innerHTML = previewHTML;
+  }
+  
+  scanBtn.disabled = false;
+  scanBtn.textContent = "Analyze File";
+  status.innerHTML = "";
+  resultCard.style.display = "none";
+}
+
+scanBtn.addEventListener('click', function() {
+  if (!selectedFile) return;
+  
+  supabase.auth.getSession().then(function(sessionR) {
+    if (!sessionR.data.session) {
+      authModal.style.display = "flex";
+      return;
+    }
+    
+    scanBtn.disabled = true;
+    scanBtn.textContent = "Analyzing...";
+    status.innerHTML = "";
+    resultCard.style.display = "none";
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    fetch(BACKEND_URL + "/scan", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + sessionR.data.session.access_token },
+      body: formData
+    }).then(function(res) {
+      return res.json().then(function(data) {
+        return { status: res.status, data: data };
+      });
+    }).then(function(result) {
+      if (result.status === 401) {
+        status.innerHTML = '<div class="msg error">Session expired. Please sign in again.</div>';
+        supabase.auth.signOut();
+        currentUser = null;
+        showLoggedOut();
+        return;
+      }
+      if (result.status === 403) {
+        status.innerHTML = '<div class="msg error">Free scan used. Scroll down to purchase more!</div>';
+        scanBtn.textContent = "Analyze File";
+        scanBtn.disabled = false;
+        return;
+      }
+      if (result.status !== 200) {
+        throw new Error(result.data.error || "Scan failed");
+      }
+      displayResults(result.data);
+      scanBtn.textContent = "Scan Complete";
+    }).catch(function(err) {
+      status.innerHTML = '<div class="msg error">Error: ' + err.message + '</div>';
+      scanBtn.textContent = "Analyze File";
+      scanBtn.disabled = false;
+    });
+  });
+});
+
+function displayResults(data) {
+  resultCard.style.display = "block";
+  const score = Math.round(data.aiScore * 100);
+  const scoreEl = document.getElementById("resultScore");
+  const verdictEl = document.getElementById("resultVerdict");
+  scoreEl.textContent = score + "%";
+  if (data.isAI) {
+    scoreEl.style.color = "#ef4444";
+    verdictEl.textContent = "Likely AI-Generated";
+    verdictEl.style.color = "#ef4444";
+  } else {
+    scoreEl.style.color = "#22c55e";
+    verdictEl.textContent = "Likely Human-Made";
+    verdictEl.style.color = "#22c55e";
+  }
+  status.innerHTML = '<div class="msg success">Analysis complete!</div>';
+}
+
+function resetUI() {
+  selectedFile = null;
+  uploadPrompt.style.display = "block";
+  filePreview.style.display = "none";
+  filePreview.innerHTML = "";
+  scanBtn.disabled = true;
+  scanBtn.textContent = "Select a file to scan";
+  status.innerHTML = "";
+  resultCard.style.display = "none";
+  fileInput.value = "";
+}
+
+document.getElementById("tryNowBtn").addEventListener('click', function() {
+  document.querySelector('.upload-section').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById("buySingleBtn").addEventListener('click', function() {
+  supabase.auth.getSession().then(function(r) {
+    if (!r.data.session) {
+      authModal.style.display = "flex";
+      return;
+    }
+    fetch(BACKEND_URL + "/create-checkout", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + r.data.session.access_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ priceId: "price_1SrqvY6ILDOjliDIBaQcBzc3", mode: "payment" })
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data.sessionId) {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        alert("Error: " + (data.error || "Could not create checkout"));
+      }
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
+  });
+});
+
+document.getElementById("buyProBtn").addEventListener('click', function() {
+  supabase.auth.getSession().then(function(r) {
+    if (!r.data.session) {
+      authModal.style.display = "flex";
+      return;
+    }
+    fetch(BACKEND_URL + "/create-checkout", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + r.data.session.access_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ priceId: "price_1Srqvt6ILDOjliDIOBp0D9od", mode: "subscription" })
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data.sessionId) {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        alert("Error: " + (data.error || "Could not create checkout"));
+      }
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
+  });
+});
+
+document.getElementById("buyPowerBtn").addEventListener('click', function() {
+  supabase.auth.getSession().then(function(r) {
+    if (!r.data.session) {
+      authModal.style.display = "flex";
+      return;
+    }
+    fetch(BACKEND_URL + "/create-checkout", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + r.data.session.access_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ priceId: "price_1SrqwD6ILDOjliDIICrdtQr2", mode: "subscription" })
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data.sessionId) {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      } else {
+        alert("Error: " + (data.error || "Could not create checkout"));
+      }
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
+  });
+});
 </script>
-
 </body>
 </html>
