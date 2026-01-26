@@ -43,9 +43,8 @@ function bindEvents() {
   // Header buttons
   document.getElementById('signInBtn').addEventListener('click', function() {
     currentUser ? showProfile() : openAuthModal(true);
-  });
   alert('signInBtn bound');
-
+  });
 
 document.getElementById(‘getStartedBtn’).addEventListener(‘click’, function() {
 currentUser ? scrollTo(‘upload’) : openAuthModal(false);
