@@ -1,4 +1,3 @@
-alert('APP.JS LOADING');
 const SUPABASE_URL = "https://tfkwctmewgsolcaphsbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg";
 const STRIPE_PK = "pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2";
@@ -439,5 +438,4 @@ async function checkout(priceId, mode) {
     alert('Checkout error: ' + error.message);
   }
 }
-alert('APP.JS FINISHED');
 
