@@ -77,7 +77,7 @@ checkout(PRICES.single, ‘payment’);
 });
 
 document.getElementById(‘buyPremiumBtn’).addEventListener(‘click’, function() {
-checkout(PRICES.starter, ‘subscription’);
+checkout(PRICES.premun, ‘subscription’);
 });
 
 document.getElementById(‘buyProBtn’).addEventListener(‘click’, function() {
@@ -438,6 +438,9 @@ headers: {
 },
 body: JSON.stringify({ priceId: priceId, mode: mode })
 });
+
+  // Call bindEvents after DOM is ready
+bindEvents();
 
 ```
 const data = await response.json();
