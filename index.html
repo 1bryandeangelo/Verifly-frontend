@@ -350,9 +350,10 @@
 <script src="app.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  alert('DOM loaded, checking buttons...');
   var btn = document.getElementById('signInBtn');
-  alert('signInBtn found: ' + (btn !== null));
+  btn.addEventListener('click', function() {
+    alert('Button clicked!');
+  });
 });
 </script>
 
