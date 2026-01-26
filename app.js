@@ -26,7 +26,6 @@ if (session?.user) {
 currentUser = session.user;
 updateUIForLoggedInUser();
 }
-});
 
 // Handle Stripe redirect
 const urlParams = new URLSearchParams(window.location.search);
@@ -37,6 +36,7 @@ window.history.replaceState({}, ‘’, window.location.pathname);
 showStatus(‘Payment canceled.’, true);
 window.history.replaceState({}, ‘’, window.location.pathname);
 }
+});
 
 function bindEvents() {
   alert('bindEvents started');
