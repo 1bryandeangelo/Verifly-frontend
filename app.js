@@ -4,7 +4,7 @@ const STRIPE_PK = "pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKF
 const BE = "https://verify-backend-rzx1.onrender.com";
 const PRICES = {
   single: 'price_1SrqvY6ILDOjliDIBaQcBzc3',
-  starter: 'price_1StYL46ILDOjliDIe0KBxUqf',
+  premium: 'price_1StYL46ILDOjliDIe0KBxUqf',
   pro: 'price_1StYLe6ILDOjliDIZamQKL1Y',
   power: 'price_1StYMD6ILDOjliDI6gVqPr7J'
 };
@@ -76,7 +76,7 @@ document.getElementById(‘buySingleBtn’).addEventListener(‘click’, functi
 checkout(PRICES.single, ‘payment’);
 });
 
-document.getElementById(‘buyStarterBtn’).addEventListener(‘click’, function() {
+document.getElementById(‘buyPremiumBtn’).addEventListener(‘click’, function() {
 checkout(PRICES.starter, ‘subscription’);
 });
 
