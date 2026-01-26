@@ -346,8 +346,24 @@
     </div>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="app.js" defer></script>
+<script>
+  alert('INLINE TEST 1');
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    alert('INLINE TEST 2 - DOM READY');
+    
+    var btn = document.getElementById('buyPremiumBtn');
+    if (btn) {
+      alert('FOUND PREMIUM BUTTON');
+      btn.addEventListener('click', function() {
+        alert('PREMIUM BUTTON CLICKED!');
+      });
+    } else {
+      alert('PREMIUM BUTTON NOT FOUND');
+    }
+  });
+</script>
+
 
 </body>
 </html>
