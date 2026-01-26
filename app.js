@@ -1,23 +1,25 @@
-const SUPABASE_URL = “https://tfkwctmewgsolcaphsbp.supabase.co”;
-const SUPABASE_ANON_KEY = “eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg”;
-const STRIPE_PK = “pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2”;
-const BE = “https://verify-backend-rzx1.onrender.com”;
+const SUPABASE_URL = "https://tfkwctmewgsolcaphsbp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg";
+const STRIPE_PK = "pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2";
+const BE = "https://verify-backend-rzx1.onrender.com";
 const PRICES = {
-single: ‘price_1SrqvY6ILDOjliDIBaQcBzc3’,
-starter: ‘price_1StYL46ILDOjliDIe0KBxUqf’,
-pro: ‘price_1StYLe6ILDOjliDIZamQKL1Y’,
-power: ‘price_1StYMD6ILDOjliDI6gVqPr7J’
+  single: 'price_1SrqvY6ILDOjliDIBaQcBzc3',
+  starter: 'price_1StYL46ILDOjliDIe0KBxUqf',
+  pro: 'price_1StYLe6ILDOjliDIZamQKL1Y',
+  power: 'price_1StYMD6ILDOjliDI6gVqPr7J'
 };
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const stripe = Stripe(STRIPE_PK);
-
+let stripe;
 let currentUser = null;
 let selectedFile = null;
 let isLoginMode = true;
 
 // Initialize on DOM ready
-document.addEventListener(‘DOMContentLoaded’, function() {
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Stripe
+  stripe = Stripe(STRIPE_PK);
+  
 // Check session
 supabase.auth.getSession().then(({ data: { session } }) => {
 if (session?.user) {
