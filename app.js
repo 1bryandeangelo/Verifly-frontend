@@ -44,6 +44,7 @@ function bindEvents() {
   document.getElementById('signInBtn').addEventListener('click', function() {
     currentUser ? showProfile() : openAuthModal(true);
   alert('signInBtn bound');
+  bindEvents();
   });
 
 document.getElementById(‘getStartedBtn’).addEventListener(‘click’, function() {
