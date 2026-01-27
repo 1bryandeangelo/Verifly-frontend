@@ -348,6 +348,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <script>
 const SUPABASE_URL = "https://tfkwctmewgsolcaphsbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg";
@@ -356,11 +358,181 @@ const BE = "https://verify-backend-rzx1.onrender.com";
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const stripe = Stripe(STRIPE_PK);
+let currentUser = null;
+let selectedFile = null;
+let isLoginMode = true;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if user is already signed in
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) {
+      currentUser = session.user;
+      document.getElementById('signInBtn').textContent = 'My Account';
+    }
+  });
+
+  // Sign In button
+  document.getElementById('signInBtn').onclick = function() {
+    if (currentUser) {
+      document.getElementById('profile').classList.add('active');
+      document.getElementById('profile').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      document.getElementById('authModal').classList.add('active');
+    }
+  };
+
+  // Get Started button
+  document.getElementById('getStartedBtn').onclick = function() {
+    if (currentUser) {
+      document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      document.getElementById('authModal').classList.add('active');
+    }
+  };
+
+  // Hero buttons
+  document.getElementById('heroTryBtn').onclick = function() {
+    document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  document.getElementById('heroPricingBtn').onclick = function() {
+    document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Upload area
+  document.getElementById('uploadArea').onclick = function() {
+    document.getElementById('fileInput').click();
+  };
+
+  document.getElementById('fileInput').onchange = function(e) {
+    selectedFile = e.target.files[0];
+    if (selectedFile) {
+      const preview = document.getElementById('filePreview');
+      preview.innerHTML = '<strong>' + selectedFile.name + '</strong> (' + (selectedFile.size / 1024 / 1024).toFixed(2) + ' MB)';
+      if (selectedFile.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(selectedFile);
+        preview.appendChild(document.createElement('br'));
+        preview.appendChild(img);
+      }
+      preview.style.display = 'block';
+      document.getElementById('scanBtn').disabled = false;
+      document.getElementById('scanBtn').textContent = 'Analyze File';
+    }
+  };
+
+  // Scan button
+  document.getElementById('scanBtn').onclick = async function() {
+    if (!selectedFile) return;
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session) {
+      document.getElementById('authModal').classList.add('active');
+      return;
+    }
+    alert('Scan feature coming soon!');
+  };
+
+  // Pricing buttons
+  document.getElementById('pricingFreeBtn').onclick = function() {
+    document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  document.getElementById('buySingleBtn').onclick = function() {
+    checkout('price_1SrqvY6ILDOjliDIBaQcBzc3', 'payment');
+  };
+
+  document.getElementById('buyPremiumBtn').onclick = function() {
+    checkout('price_1StYL46ILDOjliDIe0KBxUqf', 'subscription');
+  };
+
+  document.getElementById('buyProBtn').onclick = function() {
+    checkout('price_1StYLe6ILDOjliDIZamQKL1Y', 'subscription');
+  };
+
+  document.getElementById('buyPowerBtn').onclick = function() {
+    checkout('price_1StYMD6ILDOjliDI6gVqPr7J', 'subscription');
+  };
+
+  // Auth modal
+  document.getElementById('modalClose').onclick = function() {
+    document.getElementById('authModal').classList.remove('active');
+  };
+
+  document.getElementById('authToggle').onclick = function() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('modalTitle').textContent = isLoginMode ? 'Sign In' : 'Create Account';
+    document.getElementById('modalSubtitle').textContent = isLoginMode ? 'Welcome back!' : 'Get started free.';
+    document.getElementById('authSubmitBtn').textContent = isLoginMode ? 'Sign In' : 'Create Account';
+    document.getElementById('authToggle').textContent = isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in';
+  };
+
+  document.getElementById('authSubmitBtn').onclick = async function() {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    const msgEl = document.getElementById('authMsg');
+
+    if (!email || password.length < 8) {
+      msgEl.textContent = 'Valid email and 8+ character password required';
+      msgEl.className = 'msg error';
+      msgEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      if (isLoginMode) {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        currentUser = data.user;
+        document.getElementById('authModal').classList.remove('active');
+        document.getElementById('signInBtn').textContent = 'My Account';
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        msgEl.textContent = 'Check your email for verification link!';
+        msgEl.className = 'msg success';
+        msgEl.style.display = 'block';
+      }
+    } catch (error) {
+      msgEl.textContent = error.message;
+      msgEl.className = 'msg error';
+      msgEl.style.display = 'block';
+    }
+  };
+
+  // Profile tabs
+  document.querySelectorAll('.profile-tab').forEach(function(tab) {
+    tab.onclick = function() {
+      document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.profile-content').forEach(c => c.style.display = 'none');
+      document.getElementById('tab-' + tab.dataset.tab).style.display = 'block';
+    };
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(function(btn) {
+    btn.onclick = function() {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    };
+  });
+
+  // Logout
+  document.getElementById('logoutBtn').onclick = async function() {
+    await supabase.auth.signOut();
+    currentUser = null;
+    document.getElementById('signInBtn').textContent = 'Sign In';
+    document.getElementById('profile').classList.remove('active');
+    window.location.reload();
+  };
+});
 
 async function checkout(priceId, mode) {
   const { data: session } = await supabase.auth.getSession();
   if (!session?.session) {
-    alert('Please sign in first');
+    document.getElementById('authModal').classList.add('active');
     return;
   }
 
@@ -385,26 +557,10 @@ async function checkout(priceId, mode) {
     alert('Error: ' + error.message);
   }
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('buyPremiumBtn').onclick = function() {
-    checkout('price_1StYL46ILDOjliDIe0KBxUqf', 'subscription');
-  };
-  
-  document.getElementById('buyProBtn').onclick = function() {
-    checkout('price_1StYLe6ILDOjliDIZamQKL1Y', 'subscription');
-  };
-  
-  document.getElementById('buyPowerBtn').onclick = function() {
-    checkout('price_1StYMD6ILDOjliDI6gVqPr7J', 'subscription');
-  };
-});
 </script>
 </body>
 </html>
 
-</body>
-</html>
 
 <script> const SUPABASE_URL = "https://tfkwctmewgsolcaphsbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg";
