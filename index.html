@@ -266,6 +266,46 @@
     </div>
   </section>
 
+  <!-- Profile Section -->
+
+  <section class="section" id="profile" style="display:none;padding-top:100px">
+    <div style="max-width:800px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:40px">
+        <h2 class="section-title" style="margin:0">My Account</h2>
+        <button class="btn btn-ghost" id="signOutBtn">Sign Out</button>
+      </div>
+
+```
+  <div class="trust-card" style="margin-bottom:24px">
+    <h3 style="margin-bottom:20px">Account Overview</h3>
+    <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-secondary)">Email</span>
+      <span id="profileEmail">--</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-secondary)">Plan</span>
+      <span id="profilePlan">Free</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-secondary)">Scans Remaining</span>
+      <span id="profileScans" style="color:var(--accent);font-weight:700">--</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:16px 0">
+      <span style="color:var(--text-secondary)">Member Since</span>
+      <span id="profileJoined">--</span>
+    </div>
+  </div>
+
+  <div class="trust-card">
+    <h3 style="margin-bottom:20px">Subscription Management</h3>
+    <p style="color:var(--text-secondary);margin-bottom:20px">Manage your subscription, billing, and payment methods through Stripe.</p>
+    <button class="btn btn-primary" id="manageSubBtn">Manage Subscription</button>
+  </div>
+</div>
+```
+
+  </section>
+
   <footer class="footer">
     <div class="footer-grid">
       <div class="footer-brand"><a href="/" class="logo"><div class="logo-icon">✓</div>Verifly</a><p>AI detection to verify what's real in an increasingly synthetic world.</p></div>
@@ -314,7 +354,10 @@
     // Header - Sign In
     document.getElementById('signInBtn').onclick = function() {
       if (user) {
-        alert('Profile page coming soon! For now, sign out and back in to test.');
+        // Show profile section and scroll to it
+        document.getElementById('profile').style.display = 'block';
+        document.getElementById('profile').scrollIntoView({ behavior: 'smooth' });
+        loadProfileData();
       } else {
         document.getElementById('authModal').classList.add('active');
       }
@@ -474,6 +517,65 @@
     document.getElementById('buyPremiumBtn').onclick = () => checkout('price_1StYL46ILDOjliDIe0KBxUqf', 'subscription');
     document.getElementById('buyProBtn').onclick = () => checkout('price_1StYLe6ILDOjliDIZamQKL1Y', 'subscription');
     document.getElementById('buyPowerBtn').onclick = () => checkout('price_1StYMD6ILDOjliDI6gVqPr7J', 'subscription');
+
+    // Sign out
+    document.getElementById('signOutBtn').onclick = async function() {
+      await sb.auth.signOut();
+      user = null;
+      document.getElementById('signInBtn').textContent = 'Sign In';
+      document.getElementById('profile').style.display = 'none';
+      window.location.reload();
+    };
+
+    // Manage subscription
+    document.getElementById('manageSubBtn').onclick = async function() {
+      const { data: session } = await sb.auth.getSession();
+      try {
+        const res = await fetch(BACKEND + '/create-portal-session', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + session.session.access_token,
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert('Error: ' + (data.error || 'Could not open subscription portal'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // Load profile data from backend
+    async function loadProfileData() {
+      const { data: session } = await sb.auth.getSession();
+      if (!session?.session) return;
+
+      // Display basic user info
+      document.getElementById('profileEmail').textContent = user.email;
+      document.getElementById('profileJoined').textContent = new Date(user.created_at).toLocaleDateString();
+
+      // Fetch user plan and credits from backend
+      try {
+        const res = await fetch(BACKEND + '/user-info', {
+          headers: { 'Authorization': 'Bearer ' + session.session.access_token }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('profilePlan').textContent = data.planType || 'Free';
+          document.getElementById('profileScans').textContent = data.scansRemaining !== undefined ? data.scansRemaining : '--';
+        } else {
+          document.getElementById('profileScans').textContent = 'Error loading';
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        document.getElementById('profileScans').textContent = 'Error';
+      }
+    }
   </script>
 
 </body>
