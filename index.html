@@ -348,10 +348,24 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://js.stripe.com/v3/"></script>
-<script src="app.js?v=2"></script>
-</body>
-</html>
-
-
+<script src="app.js?v=3"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var premiumBtn = document.getElementById('buyPremiumBtn');
+      var proBtn = document.getElementById('buyProBtn');
+      var powerBtn = document.getElementById('buyPowerBtn');
+      
+      alert('Premium button exists: ' + (premiumBtn !== null) + 
+            '\nPro button exists: ' + (proBtn !== null) + 
+            '\nPower button exists: ' + (powerBtn !== null));
+      
+      // Try to click programmatically
+      if (premiumBtn) {
+        premiumBtn.click();
+      }
+    }, 2000);
+  });
+</script>
 </body>
 </html>
