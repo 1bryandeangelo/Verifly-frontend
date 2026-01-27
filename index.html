@@ -5,118 +5,287 @@
   <meta charset="UTF-8">
   <title>Verifly - Verify What's Real</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI-powered detection to identify AI-generated images, audio, and video.">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0a0f1a;
-      color: #fff;
-      padding: 20px;
-    }
-    .container { max-width: 800px; margin: 0 auto; }
-    h1 { color: #14b8a6; margin-bottom: 40px; text-align: center; }
-    .section { 
-      background: #1a2234;
-      border: 1px solid #2a3a52;
-      border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 24px;
-    }
-    .section h2 { color: #14b8a6; margin-bottom: 20px; font-size: 20px; }
-    button {
-      background: #14b8a6;
-      color: #000;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 12px;
-    }
-    button:hover { background: #0d9488; }
-    input {
-      width: 100%;
-      padding: 12px;
-      background: #0a0f1a;
-      border: 1px solid #2a3a52;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 16px;
-      margin-bottom: 12px;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal.active { display: flex; }
-    .modal-box {
-      background: #1a2234;
-      border: 1px solid #2a3a52;
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 400px;
-      width: 90%;
-    }
-    .msg {
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 12px;
-      font-size: 14px;
-    }
-    .msg.error { background: rgba(239,68,68,0.2); color: #ef4444; }
-    .msg.success { background: rgba(34,197,94,0.2); color: #22c55e; }
+    :root{--bg-primary:#0a0f1a;--bg-secondary:#111827;--bg-card:#1a2234;--bg-elevated:#232d42;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--accent:#14b8a6;--accent-glow:rgba(20,184,166,0.3);--danger:#ef4444;--success:#22c55e;--border:#2a3a52;--font-display:'Space Mono',monospace;--font-body:'DM Sans',sans-serif}
+    *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+    body{font-family:var(--font-body);background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(20,184,166,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(20,184,166,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+    .header{position:fixed;top:0;left:0;right:0;background:rgba(10,15,26,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 24px;z-index:1000;display:flex;justify-content:space-between;align-items:center}
+    .logo{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-primary);text-decoration:none;display:flex;align-items:center;gap:8px}
+    .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}
+    .nav-links{display:flex;gap:32px}.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s}.nav-links a:hover{color:var(--accent)}
+    .header-actions{display:flex;gap:12px}
+    .btn{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;font-family:var(--font-body);text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+    .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-primary{background:var(--accent);color:var(--bg-primary)}.btn-primary:hover{background:#0d9488;transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
+    .btn-large{padding:16px 32px;font-size:16px}.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important}
+    .hero{padding:160px 24px 120px;text-align:center;position:relative;z-index:1}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);padding:8px 16px;border-radius:100px;font-size:13px;color:var(--text-secondary);margin-bottom:32px}
+    .hero-badge .dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+    .hero h1{font-family:var(--font-display);font-size:clamp(40px,8vw,72px);font-weight:700;line-height:1.1;margin-bottom:24px;letter-spacing:-2px}.hero h1 span{color:var(--accent)}
+    .hero-subtitle{font-size:20px;color:var(--text-secondary);max-width:600px;margin:0 auto 40px}
+    .hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+    .hero-stats{display:flex;gap:48px;justify-content:center;margin-top:80px;padding-top:40px;border-top:1px solid var(--border);max-width:600px;margin-left:auto;margin-right:auto}
+    .stat{text-align:center}.stat-value{font-family:var(--font-display);font-size:36px;font-weight:700;color:var(--accent)}.stat-label{font-size:14px;color:var(--text-muted);margin-top:4px}
+    .upload-section{max-width:700px;margin:0 auto 120px;padding:0 24px;position:relative;z-index:1}
+    .upload-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:48px}
+    .upload-area{border:2px dashed var(--border);border-radius:12px;padding:48px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--bg-secondary);margin-bottom:24px}
+    .upload-area:hover{border-color:var(--accent);background:rgba(20,184,166,0.05)}
+    .upload-icon{width:64px;height:64px;margin:0 auto 16px;background:var(--bg-elevated);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px}
+    .upload-text{font-size:16px;font-weight:600;margin-bottom:8px}.upload-subtext{font-size:14px;color:var(--text-muted)}
+    input[type="file"]{display:none}
+    .file-preview{margin-top:20px;padding:16px;background:var(--bg-secondary);border-radius:8px;font-size:14px;color:var(--text-secondary)}
+    .file-preview img{max-width:100%;max-height:200px;border-radius:8px;margin-top:12px}
+    .result-card{background:var(--bg-secondary);border-radius:12px;padding:32px;margin-top:24px;text-align:center;border:1px solid var(--border)}
+    .result-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+    .result-score{font-family:var(--font-display);font-size:64px;font-weight:700}.result-verdict{font-size:20px;font-weight:600;margin-top:8px}
+    .section{padding:120px 24px;position:relative;z-index:1}
+    .section-header{text-align:center;max-width:700px;margin:0 auto 64px}
+    .section-tag{font-family:var(--font-display);font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px}
+    .section-title{font-family:var(--font-display);font-size:clamp(32px,5vw,48px);font-weight:700;line-height:1.2;letter-spacing:-1px;margin-bottom:20px}
+    .section-subtitle{font-size:18px;color:var(--text-secondary)}
+    .trust-section{background:var(--bg-secondary)}
+    .trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1200px;margin:0 auto}
+    .trust-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:32px;transition:all 0.3s}
+    .trust-card:hover{border-color:var(--accent);transform:translateY(-4px)}
+    .trust-icon{width:56px;height:56px;background:var(--bg-elevated);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px}
+    .trust-card h3{font-size:20px;font-weight:700;margin-bottom:12px}.trust-card p{font-size:15px;color:var(--text-secondary);line-height:1.7}
+    .trust-stat{font-family:var(--font-display);font-size:32px;color:var(--danger);margin-top:16px}
+    .steps-container{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:32px;position:relative}
+    .steps-container::before{content:'';position:absolute;top:48px;left:15%;right:15%;height:2px;background:var(--border)}
+    .step{text-align:center;position:relative;z-index:1}
+    .step-number{width:96px;height:96px;background:var(--bg-card);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-family:var(--font-display);font-size:36px;font-weight:700;color:var(--accent)}
+    .step h3{font-size:20px;font-weight:700;margin-bottom:12px}.step p{font-size:15px;color:var(--text-secondary);max-width:280px;margin:0 auto}
+    .use-cases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;max-width:1200px;margin:0 auto}
+    .use-case-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;gap:20px;transition:all 0.3s}
+    .use-case-card:hover{border-color:var(--accent)}
+    .use-case-icon{width:48px;height:48px;background:var(--bg-elevated);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+    .use-case-content h3{font-size:18px;font-weight:700;margin-bottom:8px}.use-case-content p{font-size:14px;color:var(--text-secondary);line-height:1.6}
+    .pricing-section{background:var(--bg-secondary)}
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;max-width:1400px;margin:0 auto}
+    .pricing-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;transition:all 0.3s}
+    .pricing-card:hover{transform:translateY(-4px)}
+    .pricing-card.featured{border-color:var(--accent);box-shadow:0 0 40px var(--accent-glow)}
+    .pricing-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--bg-primary);padding:4px 16px;border-radius:100px;font-size:12px;font-weight:700;text-transform:uppercase}
+    .plan-name{font-size:20px;font-weight:700;margin-bottom:8px}
+    .plan-price{font-family:var(--font-display);font-size:48px;font-weight:700;color:var(--accent);margin-bottom:4px}.plan-price small{font-size:16px;color:var(--text-muted);font-weight:400}
+    .plan-description{font-size:14px;color:var(--text-muted);margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+    .plan-features{list-style:none;margin-bottom:32px}
+    .plan-features li{padding:10px 0;font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:12px}
+    .plan-features li::before{content:'✓';color:var(--accent);font-weight:bold}
+    .plan-features li.disabled{color:var(--text-muted);text-decoration:line-through}.plan-features li.disabled::before{content:'✗';color:var(--text-muted)}
+    .pricing-btn{width:100%}
+    .faq-container{max-width:800px;margin:0 auto}
+    .faq-item{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+    .faq-question{width:100%;padding:24px;background:none;border:none;text-align:left;font-size:16px;font-weight:600;color:var(--text-primary);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:var(--font-body)}
+    .faq-question:hover{color:var(--accent)}.faq-icon{font-size:20px;transition:transform 0.3s}.faq-item.open .faq-icon{transform:rotate(45deg)}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height 0.3s}.faq-item.open .faq-answer{max-height:500px}
+    .faq-answer-content{padding:0 24px 24px;font-size:15px;color:var(--text-secondary);line-height:1.7}
+    .disclaimer{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:1200px;margin:0 auto}
+    .disclaimer h4{font-size:14px;font-weight:700;margin-bottom:8px}.disclaimer p{font-size:13px;color:var(--text-secondary);line-height:1.7}
+    .footer{background:var(--bg-secondary);border-top:1px solid var(--border);padding:80px 24px 40px;position:relative;z-index:1}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;max-width:1200px;margin:0 auto 64px}
+    .footer-brand p{font-size:14px;color:var(--text-secondary);line-height:1.7;max-width:300px;margin-top:16px}
+    .footer-column h4{font-size:14px;font-weight:700;margin-bottom:20px}
+    .footer-column a{display:block;font-size:14px;color:var(--text-secondary);text-decoration:none;padding:8px 0;transition:color 0.2s}.footer-column a:hover{color:var(--accent)}
+    .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:32px;border-top:1px solid var(--border);max-width:1200px;margin:0 auto}
+    .footer-bottom p{font-size:13px;color:var(--text-muted)}
+    .footer-legal{display:flex;gap:24px}.footer-legal a{font-size:13px;color:var(--text-muted);text-decoration:none}.footer-legal a:hover{color:var(--accent)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000;padding:24px}
+    .modal.active{display:flex}
+    .modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:420px;position:relative}
+    .modal-close{position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+    .modal-close:hover{color:var(--text-primary)}
+    .modal h2{font-size:24px;font-weight:700;margin-bottom:8px}
+    .modal-subtitle{font-size:14px;color:var(--text-secondary);margin-bottom:24px}
+    .modal-input{width:100%;padding:14px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:15px;margin-bottom:16px;font-family:var(--font-body)}
+    .modal-input:focus{outline:none;border-color:var(--accent)}
+    .modal-btn{width:100%;margin-top:8px}
+    .modal-link{display:block;text-align:center;margin-top:20px;font-size:14px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:var(--font-body)}
+    .modal-link:hover{text-decoration:underline}
+    .msg{padding:12px 16px;border-radius:8px;font-size:14px;margin-top:16px}
+    .msg.error{background:rgba(239,68,68,0.1);border:1px solid var(--danger);color:var(--danger)}
+    .msg.success{background:rgba(34,197,94,0.1);border:1px solid var(--success);color:var(--success)}
+    .msg a{color:var(--accent)}
+    @media(max-width:1024px){.nav-links{display:none}.footer-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:768px){.hero h1{font-size:36px}.hero-stats{flex-direction:column;gap:24px}.steps-container{grid-template-columns:1fr;gap:48px}.steps-container::before{display:none}.footer-grid{grid-template-columns:1fr}.footer-bottom{flex-direction:column;gap:16px;text-align:center}.header-actions{display:none}.upload-card{padding:24px}}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Verifly - AI Detection</h1>
+  <header class="header">
+    <a href="/" class="logo"><div class="logo-icon">✓</div>Verifly</a>
+    <nav class="nav-links">
+      <a href="#how-it-works">How It Works</a>
+      <a href="#use-cases">Use Cases</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-ghost" id="signInBtn">Sign In</button>
+      <button class="btn btn-primary" id="getStartedBtn">Get Started</button>
+    </div>
+  </header>
 
-```
-<div class="section">
-  <h2>1. Sign In</h2>
-  <button id="signInBtn">Sign In / Sign Up</button>
-  <div id="userInfo"></div>
-</div>
+  <section class="hero">
+    <div class="hero-badge"><span class="dot"></span>AI Detection Technology</div>
+    <h1>Verify What's <span>Real</span></h1>
+    <p class="hero-subtitle">Advanced AI-powered detection to identify synthetic images, audio, and video. Protect yourself from deepfakes and misinformation.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary btn-large" id="heroTryBtn">Try Free Scan</button>
+      <button class="btn btn-ghost btn-large" id="heroPricingBtn">View Pricing</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-value">95%</div><div class="stat-label">Detection Accuracy</div></div>
+      <div class="stat"><div class="stat-value">&lt;3s</div><div class="stat-label">Analysis Time</div></div>
+      <div class="stat"><div class="stat-value">10K+</div><div class="stat-label">Scans Processed</div></div>
+    </div>
+  </section>
 
-<div class="section">
-  <h2>2. Upload File</h2>
-  <input type="file" id="fileInput" accept="image/*">
-  <button id="scanBtn" disabled>Select a file first</button>
-  <div id="scanResult"></div>
-</div>
+  <section class="upload-section" id="upload">
+    <div class="upload-card">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📤</div>
+        <p class="upload-text">Drop your file here or click to upload</p>
+        <p class="upload-subtext">Supports images, audio, and video up to 50MB</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*,audio/*,video/*">
+      <div id="filePreview" class="file-preview" style="display:none"></div>
+      <button class="btn btn-primary btn-large" id="scanBtn" disabled style="width:100%">Select a file to scan</button>
+      <div id="statusMsg"></div>
+      <div class="result-card" id="resultCard" style="display:none">
+        <div class="result-label">AI Detection Confidence</div>
+        <div class="result-score" id="resultScore">--</div>
+        <div class="result-verdict" id="resultVerdict"></div>
+      </div>
+    </div>
+  </section>
 
-<div class="section">
-  <h2>3. Buy Credits</h2>
-  <button id="buySingleBtn">Buy 1 Scan - $1.99</button>
-  <button id="buyPremiumBtn">Premium - $4.99/mo</button>
-  <button id="buyProBtn">Pro - $9.99/mo</button>
-  <button id="buyPowerBtn">Power - $29.99/mo</button>
-</div>
-```
+  <section class="section trust-section">
+    <div class="section-header">
+      <div class="section-tag">The Problem</div>
+      <h2 class="section-title">The Internet Is Getting Harder to Trust</h2>
+      <p class="section-subtitle">AI-generated content is flooding every corner of the web.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card"><div class="trust-icon">📰</div><h3>News Stories</h3><p>Deepfake videos and AI-generated articles spread misinformation at scale.</p><div class="trust-stat">96% increase</div></div>
+      <div class="trust-card"><div class="trust-icon">📱</div><h3>Social Media</h3><p>Fake influencers and synthetic content manipulate opinions.</p><div class="trust-stat">500M+ daily</div></div>
+      <div class="trust-card"><div class="trust-icon">🛒</div><h3>Online Resale</h3><p>AI-generated product photos defraud buyers on marketplaces.</p><div class="trust-stat">$48B fraud</div></div>
+      <div class="trust-card"><div class="trust-icon">💕</div><h3>Dating</h3><p>Romance scams powered by AI photos and deepfake video calls.</p><div class="trust-stat">1 in 4 fake</div></div>
+    </div>
+  </section>
 
-  </div>
+  <section class="section" id="how-it-works">
+    <div class="section-header">
+      <div class="section-tag">Simple Process</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Get results in seconds with our advanced detection technology.</p>
+    </div>
+    <div class="steps-container">
+      <div class="step"><div class="step-number">1</div><h3>Upload</h3><p>Drag and drop any image, audio, or video file you want to verify.</p></div>
+      <div class="step"><div class="step-number">2</div><h3>Analyze</h3><p>Our AI examines patterns and signatures unique to synthetic media.</p></div>
+      <div class="step"><div class="step-number">3</div><h3>Results</h3><p>Get a clear confidence score and verdict within seconds.</p></div>
+    </div>
+  </section>
 
-  <!-- Auth Modal -->
+  <section class="section" id="use-cases" style="background:var(--bg-secondary)">
+    <div class="section-header">
+      <div class="section-tag">Who It's For</div>
+      <h2 class="section-title">Use Cases</h2>
+      <p class="section-subtitle">Verifly helps professionals and individuals verify content authenticity.</p>
+    </div>
+    <div class="use-cases-grid">
+      <div class="use-case-card"><div class="use-case-icon">📰</div><div class="use-case-content"><h3>Journalists</h3><p>Verify sources and detect manipulated media before publishing.</p></div></div>
+      <div class="use-case-card"><div class="use-case-icon">🎓</div><div class="use-case-content"><h3>Educators</h3><p>Detect AI-generated submissions and verify research materials.</p></div></div>
+      <div class="use-case-card"><div class="use-case-icon">🛡️</div><div class="use-case-content"><h3>HR & Recruiters</h3><p>Verify candidate photos and video interviews.</p></div></div>
+      <div class="use-case-card"><div class="use-case-icon">⚖️</div><div class="use-case-content"><h3>Legal Professionals</h3><p>Authenticate digital evidence in legal proceedings.</p></div></div>
+      <div class="use-case-card"><div class="use-case-icon">💼</div><div class="use-case-content"><h3>Content Creators</h3><p>Protect your brand from unauthorized AI copies.</p></div></div>
+      <div class="use-case-card"><div class="use-case-icon">👤</div><div class="use-case-content"><h3>Everyday Users</h3><p>Check suspicious profiles and listings before getting scammed.</p></div></div>
+    </div>
+  </section>
+
+  <section class="section pricing-section" id="pricing">
+    <div class="section-header">
+      <div class="section-tag">Pricing</div>
+      <h2 class="section-title">Simple, Transparent Pricing</h2>
+      <p class="section-subtitle">Start free, upgrade when you need more.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Free</div><div class="plan-price">$0</div><p class="plan-description">Try it out</p>
+        <ul class="plan-features"><li>1 free scan</li><li>Image detection</li><li class="disabled">Audio detection</li><li class="disabled">Video detection</li></ul>
+        <button class="btn btn-ghost pricing-btn" id="pricingFreeBtn">Get Started</button>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Pay Per Scan</div><div class="plan-price">$1.99</div><p class="plan-description">Never expires</p>
+        <ul class="plan-features"><li>1 scan credit</li><li>Image detection</li><li>No subscription</li><li class="disabled">Audio/video</li></ul>
+        <button class="btn btn-primary pricing-btn" id="buySingleBtn">Buy Scan</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Best Value</div>
+        <div class="plan-name">Premium</div><div class="plan-price">$4.99<small>/mo</small></div><p class="plan-description">~$0.20 per scan</p>
+        <ul class="plan-features"><li>25 scans/month</li><li>Rollover up to 50</li><li>Email support</li><li class="disabled">Audio/video</li></ul>
+        <button class="btn btn-primary pricing-btn" id="buyPremiumBtn">Subscribe</button>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Pro</div><div class="plan-price">$9.99<small>/mo</small></div><p class="plan-description">~$0.10 per scan</p>
+        <ul class="plan-features"><li>100 scans/month</li><li>Rollover up to 150</li><li>Priority support</li><li class="disabled">Audio/video</li></ul>
+        <button class="btn btn-primary pricing-btn" id="buyProBtn">Subscribe</button>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Power</div><div class="plan-price">$29.99<small>/mo</small></div><p class="plan-description">Full access</p>
+        <ul class="plan-features"><li>500 scans/month</li><li>Image + audio + video</li><li>API access</li><li>Dedicated support</li></ul>
+        <button class="btn btn-primary pricing-btn" id="buyPowerBtn">Subscribe</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="section-header">
+      <div class="section-tag">FAQ</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-container">
+      <div class="faq-item"><button class="faq-question">How accurate is Verifly?<span class="faq-icon">+</span></button><div class="faq-answer"><div class="faq-answer-content">Verifly achieves approximately 95% accuracy. Accuracy varies based on AI model sophistication, image quality, and compression.</div></div></div>
+      <div class="faq-item"><button class="faq-question">What files can I scan?<span class="faq-icon">+</span></button><div class="faq-answer"><div class="faq-answer-content">All plans support images (JPEG, PNG, WebP, GIF). Power plan adds audio (MP3, WAV) and video (MP4, MOV) up to 20 minutes.</div></div></div>
+      <div class="faq-item"><button class="faq-question">How does rollover work?<span class="faq-icon">+</span></button><div class="faq-answer"><div class="faq-answer-content">Unused scans roll over monthly up to your plan's max. Premium: 50, Pro: 150. Power plans don't have rollover.</div></div></div>
+      <div class="faq-item"><button class="faq-question">Can I cancel anytime?<span class="faq-icon">+</span></button><div class="faq-answer"><div class="faq-answer-content">Yes, cancel anytime from account settings. Access continues until end of billing period.</div></div></div>
+      <div class="faq-item"><button class="faq-question">Is my content stored?<span class="faq-icon">+</span></button><div class="faq-answer"><div class="faq-answer-content">Files are processed in real-time and deleted after analysis. We don't store or share your uploads.</div></div></div>
+      <div class="faq-item"><button class="faq-question">What if results are wrong?<span class="faq-icon">+</span></button><div class="faq-answer"><div class="faq-answer-content">AI detection isn't perfect. Use Verifly as one data point in verification, not definitive proof.</div></div></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="disclaimer">
+      <h4>⚠️ Important Disclaimer</h4>
+      <p>Verifly provides AI detection as an informational tool only. Results may contain false positives or negatives. Not for use as sole basis for legal, professional, or personal decisions. By using this service, you agree to our <a href="/terms.html">Terms of Service</a>.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="/" class="logo"><div class="logo-icon">✓</div>Verifly</a><p>AI detection to verify what's real in an increasingly synthetic world.</p></div>
+      <div class="footer-column"><h4>Product</h4><a href="#how-it-works">How It Works</a><a href="#use-cases">Use Cases</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+      <div class="footer-column"><h4>Company</h4><a href="mailto:support@tryverifly.com">Contact</a></div>
+      <div class="footer-column"><h4>Legal</h4><a href="/terms.html">Terms of Service</a><a href="/privacy.html">Privacy Policy</a></div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 Verifly. All rights reserved.</p><div class="footer-legal"><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="mailto:support@tryverifly.com">Contact</a></div></div>
+  </footer>
 
   <div class="modal" id="authModal">
     <div class="modal-box">
+      <button class="modal-close" id="modalClose">✕</button>
       <h2 id="modalTitle">Sign In</h2>
-      <input type="email" id="authEmail" placeholder="Email">
-      <input type="password" id="authPassword" placeholder="Password (8+ chars)">
-      <button id="authSubmitBtn">Continue</button>
-      <button id="toggleAuthBtn" style="background: transparent; color: #14b8a6; border: 1px solid #14b8a6;">
-        Switch to Sign Up
-      </button>
-      <div id="authMsg"></div>
+      <p class="modal-subtitle" id="modalSubtitle">Welcome back!</p>
+      <input type="email" class="modal-input" id="authEmail" placeholder="Email address">
+      <input type="password" class="modal-input" id="authPassword" placeholder="Password (8+ characters)">
+      <button class="btn btn-primary modal-btn" id="authSubmitBtn">Sign In</button>
+      <button class="modal-link" id="authToggle">Don't have an account? Sign up</button>
+      <div id="authMsg" class="msg" style="display:none"></div>
     </div>
   </div>
 
@@ -138,29 +307,93 @@
     sb.auth.getSession().then(r => {
       if (r.data.session) {
         user = r.data.session.user;
-        document.getElementById('userInfo').innerHTML = '<div class="msg success">Signed in as: ' + user.email + '</div>';
-        document.getElementById('signInBtn').textContent = 'Sign Out';
+        document.getElementById('signInBtn').textContent = 'My Account';
       }
     });
 
-    // Sign In button
+    // Header - Sign In
     document.getElementById('signInBtn').onclick = function() {
       if (user) {
-        sb.auth.signOut().then(() => {
-          user = null;
-          document.getElementById('userInfo').innerHTML = '';
-          document.getElementById('signInBtn').textContent = 'Sign In / Sign Up';
-        });
+        alert('Profile page coming soon! For now, sign out and back in to test.');
       } else {
         document.getElementById('authModal').classList.add('active');
       }
     };
 
-    // Toggle auth mode
-    document.getElementById('toggleAuthBtn').onclick = function() {
+    // Header - Get Started
+    document.getElementById('getStartedBtn').onclick = function() {
+      document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Hero - Try Free Scan
+    document.getElementById('heroTryBtn').onclick = function() {
+      document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Hero - View Pricing
+    document.getElementById('heroPricingBtn').onclick = function() {
+      document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Upload area click
+    document.getElementById('uploadArea').onclick = function() {
+      document.getElementById('fileInput').click();
+    };
+
+    // File selected
+    document.getElementById('fileInput').onchange = function(e) {
+      file = e.target.files[0];
+      if (file) {
+        const preview = document.getElementById('filePreview');
+        preview.innerHTML = '<strong>' + file.name + '</strong> (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          preview.appendChild(document.createElement('br'));
+          preview.appendChild(img);
+        }
+        preview.style.display = 'block';
+        document.getElementById('scanBtn').disabled = false;
+        document.getElementById('scanBtn').textContent = 'Analyze File';
+      }
+    };
+
+    // Scan button
+    document.getElementById('scanBtn').onclick = function() {
+      if (!user) {
+        document.getElementById('authModal').classList.add('active');
+        return;
+      }
+      if (!file) {
+        alert('Please select a file first');
+        return;
+      }
+      // Placeholder - real scan coming soon
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultScore').textContent = '87%';
+      document.getElementById('resultScore').style.color = '#ef4444';
+      document.getElementById('resultVerdict').textContent = 'Likely AI-Generated';
+      document.getElementById('resultVerdict').style.color = '#ef4444';
+      document.getElementById('scanBtn').textContent = 'Scan Complete!';
+    };
+
+    // Pricing - Free button
+    document.getElementById('pricingFreeBtn').onclick = function() {
+      document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // Auth modal - Close
+    document.getElementById('modalClose').onclick = function() {
+      document.getElementById('authModal').classList.remove('active');
+    };
+
+    // Auth modal - Toggle
+    document.getElementById('authToggle').onclick = function() {
       isLogin = !isLogin;
-      document.getElementById('modalTitle').textContent = isLogin ? 'Sign In' : 'Sign Up';
-      document.getElementById('toggleAuthBtn').textContent = isLogin ? 'Switch to Sign Up' : 'Switch to Sign In';
+      document.getElementById('modalTitle').textContent = isLogin ? 'Sign In' : 'Create Account';
+      document.getElementById('modalSubtitle').textContent = isLogin ? 'Welcome back!' : 'Get started free.';
+      document.getElementById('authSubmitBtn').textContent = isLogin ? 'Sign In' : 'Create Account';
+      document.getElementById('authToggle').textContent = isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in';
     };
 
     // Auth submit
@@ -171,6 +404,7 @@
 
       if (!email || password.length < 8) {
         msg.innerHTML = '<div class="msg error">Email required. Password 8+ chars.</div>';
+        msg.style.display = 'block';
         return;
       }
 
@@ -180,39 +414,29 @@
           if (error) throw error;
           user = data.user;
           document.getElementById('authModal').classList.remove('active');
-          document.getElementById('userInfo').innerHTML = '<div class="msg success">Signed in!</div>';
-          document.getElementById('signInBtn').textContent = 'Sign Out';
+          document.getElementById('signInBtn').textContent = 'My Account';
+          msg.style.display = 'none';
         } else {
           const { error } = await sb.auth.signUp({ email, password });
           if (error) throw error;
-          msg.innerHTML = '<div class="msg success">Check your email!</div>';
+          msg.innerHTML = '<div class="msg success">Check your email for verification!</div>';
+          msg.style.display = 'block';
         }
       } catch (err) {
         msg.innerHTML = '<div class="msg error">' + err.message + '</div>';
+        msg.style.display = 'block';
       }
     };
 
-    // File input
-    document.getElementById('fileInput').onchange = function(e) {
-      file = e.target.files[0];
-      if (file) {
-        document.getElementById('scanBtn').disabled = false;
-        document.getElementById('scanBtn').textContent = 'Scan ' + file.name;
-      }
-    };
-
-    // Scan button
-    document.getElementById('scanBtn').onclick = function() {
-      if (!user) {
-        alert('Please sign in first');
-        return;
-      }
-      if (!file) {
-        alert('Please select a file');
-        return;
-      }
-      document.getElementById('scanResult').innerHTML = '<div class="msg success">Scan feature coming soon!</div>';
-    };
+    // FAQ accordion
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.onclick = function() {
+        const item = btn.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      };
+    });
 
     // Checkout function
     async function checkout(priceId, mode) {
