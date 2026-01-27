@@ -1,3 +1,8 @@
+window.onerror = function(msg, url, line) {
+  alert('JavaScript Error: ' + msg + ' at line ' + line);
+  return false;
+};
+
 const SUPABASE_URL = "https://tfkwctmewgsolcaphsbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg";
 const STRIPE_PK = "pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2";
@@ -14,9 +19,11 @@ let stripe;
 let currentUser = null;
 let selectedFile = null;
 let isLoginMode = true;
+alert('Variables initialized, about to set up DOMContentLoaded');
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
+  alert('DOMContentLoaded fired!');
   // Initialize Stripe
   stripe = Stripe(STRIPE_PK);
   
@@ -74,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.getElementById('buyPremiumBtn')?.addEventListener('click', function() {
+    alert('Premium button listener attached!');
     checkout(PRICES.premium, 'subscription');
   });
 
