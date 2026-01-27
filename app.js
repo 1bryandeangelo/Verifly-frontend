@@ -1,8 +1,3 @@
-window.onerror = function(msg, url, line) {
-  alert('JavaScript Error: ' + msg + ' at line ' + line);
-  return false;
-};
-
 const SUPABASE_URL = "https://tfkwctmewgsolcaphsbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRma3djdG1ld2dzb2xjYXBoc2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzgzMTksImV4cCI6MjA4NDU1NDMxOX0.ovEcqdGAbL0e-3KIElG0gFTIsTpcmHo_FuVb_S1eVOg";
 const STRIPE_PK = "pk_live_51SrWQV6ILDOjliDIgVHOujhKwwIvtl4zjH9BCCvh5c0U2sydcHKFIDAEdgmQZdCkRER1l9IydrEC5BYE5FLBYjVR00euV5fqz2";
@@ -19,11 +14,9 @@ let stripe;
 let currentUser = null;
 let selectedFile = null;
 let isLoginMode = true;
-alert('Variables initialized, about to set up DOMContentLoaded');
 
-// Initialize on DOM ready
+// Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
-  alert('DOMContentLoaded fired!');
   // Initialize Stripe
   stripe = Stripe(STRIPE_PK);
   
@@ -46,71 +39,130 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Header buttons
-  document.getElementById('signInBtn')?.addEventListener('click', function() {
-    currentUser ? showProfile() : openAuthModal(true);
-  });
+  const signInBtn = document.getElementById('signInBtn');
+  if (signInBtn) {
+    signInBtn.addEventListener('click', function() {
+      currentUser ? showProfile() : openAuthModal(true);
+    });
+  }
 
-  document.getElementById('getStartedBtn')?.addEventListener('click', function() {
-    currentUser ? scrollTo('upload') : openAuthModal(false);
-  });
+  const getStartedBtn = document.getElementById('getStartedBtn');
+  if (getStartedBtn) {
+    getStartedBtn.addEventListener('click', function() {
+      currentUser ? scrollTo('upload') : openAuthModal(false);
+    });
+  }
 
   // Hero buttons
-  document.getElementById('heroTryBtn')?.addEventListener('click', function() {
-    scrollTo('upload');
-  });
+  const heroTryBtn = document.getElementById('heroTryBtn');
+  if (heroTryBtn) {
+    heroTryBtn.addEventListener('click', function() {
+      scrollTo('upload');
+    });
+  }
 
-  document.getElementById('heroPricingBtn')?.addEventListener('click', function() {
-    scrollTo('pricing');
-  });
+  const heroPricingBtn = document.getElementById('heroPricingBtn');
+  if (heroPricingBtn) {
+    heroPricingBtn.addEventListener('click', function() {
+      scrollTo('pricing');
+    });
+  }
 
   // Upload
-  document.getElementById('uploadArea')?.addEventListener('click', function() {
-    document.getElementById('fileInput').click();
-  });
+  const uploadArea = document.getElementById('uploadArea');
+  if (uploadArea) {
+    uploadArea.addEventListener('click', function() {
+      document.getElementById('fileInput').click();
+    });
+  }
 
-  document.getElementById('fileInput')?.addEventListener('change', handleFileSelect);
-  document.getElementById('scanBtn')?.addEventListener('click', handleScan);
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', handleFileSelect);
+  }
+
+  const scanBtn = document.getElementById('scanBtn');
+  if (scanBtn) {
+    scanBtn.addEventListener('click', handleScan);
+  }
 
   // Pricing buttons
-  document.getElementById('pricingFreeBtn')?.addEventListener('click', function() {
-    scrollTo('upload');
-  });
+  const pricingFreeBtn = document.getElementById('pricingFreeBtn');
+  if (pricingFreeBtn) {
+    pricingFreeBtn.addEventListener('click', function() {
+      scrollTo('upload');
+    });
+  }
 
-  document.getElementById('buySingleBtn')?.addEventListener('click', function() {
-    checkout(PRICES.single, 'payment');
-  });
+  const buySingleBtn = document.getElementById('buySingleBtn');
+  if (buySingleBtn) {
+    buySingleBtn.addEventListener('click', function() {
+      checkout(PRICES.single, 'payment');
+    });
+  }
 
-  document.getElementById('buyPremiumBtn')?.addEventListener('click', function() {
-    alert('Premium button listener attached!');
-    checkout(PRICES.premium, 'subscription');
-  });
+  const buyPremiumBtn = document.getElementById('buyPremiumBtn');
+  if (buyPremiumBtn) {
+    buyPremiumBtn.addEventListener('click', function() {
+      checkout(PRICES.premium, 'subscription');
+    });
+  }
 
-  document.getElementById('buyProBtn')?.addEventListener('click', function() {
-    checkout(PRICES.pro, 'subscription');
-  });
+  const buyProBtn = document.getElementById('buyProBtn');
+  if (buyProBtn) {
+    buyProBtn.addEventListener('click', function() {
+      checkout(PRICES.pro, 'subscription');
+    });
+  }
 
-  document.getElementById('buyPowerBtn')?.addEventListener('click', function() {
-    checkout(PRICES.power, 'subscription');
-  });
+  const buyPowerBtn = document.getElementById('buyPowerBtn');
+  if (buyPowerBtn) {
+    buyPowerBtn.addEventListener('click', function() {
+      checkout(PRICES.power, 'subscription');
+    });
+  }
 
   // Auth modal
-  document.getElementById('modalClose')?.addEventListener('click', closeAuthModal);
+  const modalClose = document.getElementById('modalClose');
+  if (modalClose) {
+    modalClose.addEventListener('click', closeAuthModal);
+  }
 
-  document.getElementById('authToggle')?.addEventListener('click', function() {
-    isLoginMode = !isLoginMode;
-    updateAuthModalUI();
-  });
+  const authToggle = document.getElementById('authToggle');
+  if (authToggle) {
+    authToggle.addEventListener('click', function() {
+      isLoginMode = !isLoginMode;
+      updateAuthModalUI();
+    });
+  }
 
-  document.getElementById('authSubmitBtn')?.addEventListener('click', handleAuth);
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  if (authSubmitBtn) {
+    authSubmitBtn.addEventListener('click', handleAuth);
+  }
 
-  document.getElementById('authModal')?.addEventListener('click', function(e) {
-    if (e.target.id === 'authModal') closeAuthModal();
-  });
+  const authModal = document.getElementById('authModal');
+  if (authModal) {
+    authModal.addEventListener('click', function(e) {
+      if (e.target.id === 'authModal') closeAuthModal();
+    });
+  }
 
   // Profile
-  document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
-  document.getElementById('changePasswordBtn')?.addEventListener('click', handlePasswordChange);
-  document.getElementById('manageSubBtn')?.addEventListener('click', openCustomerPortal);
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+
+  const changePasswordBtn = document.getElementById('changePasswordBtn');
+  if (changePasswordBtn) {
+    changePasswordBtn.addEventListener('click', handlePasswordChange);
+  }
+
+  const manageSubBtn = document.getElementById('manageSubBtn');
+  if (manageSubBtn) {
+    manageSubBtn.addEventListener('click', openCustomerPortal);
+  }
 
   // Profile tabs
   document.querySelectorAll('.profile-tab').forEach(function(tab) {
@@ -118,7 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       document.querySelectorAll('.profile-content').forEach(c => c.style.display = 'none');
-      document.getElementById('tab-' + tab.dataset.tab).style.display = 'block';
+      const tabContent = document.getElementById('tab-' + tab.dataset.tab);
+      if (tabContent) {
+        tabContent.style.display = 'block';
+      }
     });
   });
 
@@ -135,11 +190,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Utility functions
 function scrollTo(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 function showStatus(msg, isError) {
-  document.getElementById('statusMsg').innerHTML = '<div class="msg ' + (isError ? 'error' : 'success') + '">' + msg + '</div>';
+  const statusMsg = document.getElementById('statusMsg');
+  if (statusMsg) {
+    statusMsg.innerHTML = '<div class="msg ' + (isError ? 'error' : 'success') + '">' + msg + '</div>';
+  }
 }
 
 function capitalizeFirst(str) {
@@ -150,33 +211,71 @@ function capitalizeFirst(str) {
 function openAuthModal(login) {
   isLoginMode = login;
   updateAuthModalUI();
-  document.getElementById('authModal').classList.add('active');
-  document.getElementById('authMsg').style.display = 'none';
+  const authModal = document.getElementById('authModal');
+  if (authModal) {
+    authModal.classList.add('active');
+  }
+  const authMsg = document.getElementById('authMsg');
+  if (authMsg) {
+    authMsg.style.display = 'none';
+  }
 }
 
 function closeAuthModal() {
-  document.getElementById('authModal').classList.remove('active');
-  document.getElementById('authEmail').value = '';
-  document.getElementById('authPassword').value = '';
-  document.getElementById('authMsg').style.display = 'none';
+  const authModal = document.getElementById('authModal');
+  if (authModal) {
+    authModal.classList.remove('active');
+  }
+  const authEmail = document.getElementById('authEmail');
+  if (authEmail) {
+    authEmail.value = '';
+  }
+  const authPassword = document.getElementById('authPassword');
+  if (authPassword) {
+    authPassword.value = '';
+  }
+  const authMsg = document.getElementById('authMsg');
+  if (authMsg) {
+    authMsg.style.display = 'none';
+  }
 }
 
 function updateAuthModalUI() {
-  document.getElementById('modalTitle').textContent = isLoginMode ? 'Sign In' : 'Create Account';
-  document.getElementById('modalSubtitle').textContent = isLoginMode ? 'Welcome back!' : 'Get started free.';
-  document.getElementById('authSubmitBtn').textContent = isLoginMode ? 'Sign In' : 'Create Account';
-  document.getElementById('authToggle').textContent = isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in';
+  const modalTitle = document.getElementById('modalTitle');
+  if (modalTitle) {
+    modalTitle.textContent = isLoginMode ? 'Sign In' : 'Create Account';
+  }
+  
+  const modalSubtitle = document.getElementById('modalSubtitle');
+  if (modalSubtitle) {
+    modalSubtitle.textContent = isLoginMode ? 'Welcome back!' : 'Get started free.';
+  }
+  
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  if (authSubmitBtn) {
+    authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Create Account';
+  }
+  
+  const authToggle = document.getElementById('authToggle');
+  if (authToggle) {
+    authToggle.textContent = isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in';
+  }
 }
 
 async function handleAuth() {
-  const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-  const msgEl = document.getElementById('authMsg');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const authMsg = document.getElementById('authMsg');
+  
+  if (!authEmail || !authPassword || !authMsg) return;
+  
+  const email = authEmail.value;
+  const password = authPassword.value;
 
   if (!email || password.length < 8) {
-    msgEl.textContent = 'Valid email and 8+ character password required';
-    msgEl.className = 'msg error';
-    msgEl.style.display = 'block';
+    authMsg.textContent = 'Valid email and 8+ character password required';
+    authMsg.className = 'msg error';
+    authMsg.style.display = 'block';
     return;
   }
 
@@ -190,39 +289,63 @@ async function handleAuth() {
     } else {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      msgEl.textContent = 'Check your email for verification link!';
-      msgEl.className = 'msg success';
-      msgEl.style.display = 'block';
+      authMsg.textContent = 'Check your email for verification link!';
+      authMsg.className = 'msg success';
+      authMsg.style.display = 'block';
     }
   } catch (error) {
-    msgEl.textContent = error.message;
-    msgEl.className = 'msg error';
-    msgEl.style.display = 'block';
+    authMsg.textContent = error.message;
+    authMsg.className = 'msg error';
+    authMsg.style.display = 'block';
   }
 }
 
 function updateUIForLoggedInUser() {
-  document.getElementById('signInBtn').textContent = 'My Account';
-  document.getElementById('getStartedBtn').textContent = 'Scan Now';
+  const signInBtn = document.getElementById('signInBtn');
+  if (signInBtn) {
+    signInBtn.textContent = 'My Account';
+  }
+  const getStartedBtn = document.getElementById('getStartedBtn');
+  if (getStartedBtn) {
+    getStartedBtn.textContent = 'Scan Now';
+  }
 }
 
 async function handleLogout() {
   await supabase.auth.signOut();
   currentUser = null;
-  document.getElementById('signInBtn').textContent = 'Sign In';
-  document.getElementById('getStartedBtn').textContent = 'Get Started';
-  document.getElementById('profile').classList.remove('active');
+  const signInBtn = document.getElementById('signInBtn');
+  if (signInBtn) {
+    signInBtn.textContent = 'Sign In';
+  }
+  const getStartedBtn = document.getElementById('getStartedBtn');
+  if (getStartedBtn) {
+    getStartedBtn.textContent = 'Get Started';
+  }
+  const profile = document.getElementById('profile');
+  if (profile) {
+    profile.classList.remove('active');
+  }
   window.location.reload();
 }
 
 // Profile functions
 async function showProfile() {
-  document.getElementById('profile').classList.add('active');
-  document.getElementById('profile').scrollIntoView({ behavior: 'smooth' });
+  const profile = document.getElementById('profile');
+  if (profile) {
+    profile.classList.add('active');
+    profile.scrollIntoView({ behavior: 'smooth' });
+  }
 
   if (currentUser) {
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('profileJoined').textContent = new Date(currentUser.created_at).toLocaleDateString();
+    const profileEmail = document.getElementById('profileEmail');
+    if (profileEmail) {
+      profileEmail.textContent = currentUser.email;
+    }
+    const profileJoined = document.getElementById('profileJoined');
+    if (profileJoined) {
+      profileJoined.textContent = new Date(currentUser.created_at).toLocaleDateString();
+    }
     await loadUserData();
     await loadScanHistory();
   }
@@ -239,9 +362,18 @@ async function loadUserData() {
 
     if (response.ok) {
       const data = await response.json();
-      document.getElementById('profilePlan').textContent = capitalizeFirst(data.planType || 'Free');
-      document.getElementById('profileScans').textContent = data.scansRemaining ?? '--';
-      document.getElementById('subPlan').textContent = capitalizeFirst(data.planType || 'Free');
+      const profilePlan = document.getElementById('profilePlan');
+      if (profilePlan) {
+        profilePlan.textContent = capitalizeFirst(data.planType || 'Free');
+      }
+      const profileScans = document.getElementById('profileScans');
+      if (profileScans) {
+        profileScans.textContent = data.scansRemaining ?? '--';
+      }
+      const subPlan = document.getElementById('subPlan');
+      if (subPlan) {
+        subPlan.textContent = capitalizeFirst(data.planType || 'Free');
+      }
     }
   } catch (error) {
     console.error('Error loading user data:', error);
@@ -260,6 +392,8 @@ async function loadScanHistory() {
     if (error) throw error;
 
     const tbody = document.getElementById('scanHistoryBody');
+    if (!tbody) return;
+
     if (scans && scans.length > 0) {
       tbody.innerHTML = scans.map(function(scan) {
         return '<tr>' +
@@ -279,28 +413,30 @@ async function loadScanHistory() {
 }
 
 async function handlePasswordChange() {
-  const newPassword = document.getElementById('newPassword').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-  const msgEl = document.getElementById('passwordMsg');
+  const newPassword = document.getElementById('newPassword');
+  const confirmPassword = document.getElementById('confirmPassword');
+  const passwordMsg = document.getElementById('passwordMsg');
+  
+  if (!newPassword || !confirmPassword || !passwordMsg) return;
 
-  if (newPassword.length < 8) {
-    msgEl.innerHTML = '<div class="msg error">Password must be at least 8 characters</div>';
+  if (newPassword.value.length < 8) {
+    passwordMsg.innerHTML = '<div class="msg error">Password must be at least 8 characters</div>';
     return;
   }
 
-  if (newPassword !== confirmPassword) {
-    msgEl.innerHTML = '<div class="msg error">Passwords do not match</div>';
+  if (newPassword.value !== confirmPassword.value) {
+    passwordMsg.innerHTML = '<div class="msg error">Passwords do not match</div>';
     return;
   }
 
   try {
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await supabase.auth.updateUser({ password: newPassword.value });
     if (error) throw error;
-    msgEl.innerHTML = '<div class="msg success">Password updated successfully</div>';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
+    passwordMsg.innerHTML = '<div class="msg success">Password updated successfully</div>';
+    newPassword.value = '';
+    confirmPassword.value = '';
   } catch (error) {
-    msgEl.innerHTML = '<div class="msg error">' + error.message + '</div>';
+    passwordMsg.innerHTML = '<div class="msg error">' + error.message + '</div>';
   }
 }
 
@@ -336,6 +472,8 @@ function handleFileSelect(e) {
   selectedFile = e.target.files[0];
   if (selectedFile) {
     const preview = document.getElementById('filePreview');
+    if (!preview) return;
+    
     preview.innerHTML = '<strong>' + selectedFile.name + '</strong> (' + (selectedFile.size / 1024 / 1024).toFixed(2) + ' MB)';
 
     if (selectedFile.type.startsWith('image/')) {
@@ -346,9 +484,15 @@ function handleFileSelect(e) {
     }
 
     preview.style.display = 'block';
-    document.getElementById('scanBtn').disabled = false;
-    document.getElementById('scanBtn').textContent = 'Analyze File';
-    document.getElementById('resultCard').style.display = 'none';
+    const scanBtn = document.getElementById('scanBtn');
+    if (scanBtn) {
+      scanBtn.disabled = false;
+      scanBtn.textContent = 'Analyze File';
+    }
+    const resultCard = document.getElementById('resultCard');
+    if (resultCard) {
+      resultCard.style.display = 'none';
+    }
   }
 }
 
@@ -362,8 +506,10 @@ async function handleScan() {
   }
 
   const scanBtn = document.getElementById('scanBtn');
-  scanBtn.disabled = true;
-  scanBtn.textContent = 'Analyzing…';
+  if (scanBtn) {
+    scanBtn.disabled = true;
+    scanBtn.textContent = 'Analyzing…';
+  }
 
   try {
     const formData = new FormData();
@@ -383,8 +529,10 @@ async function handleScan() {
       } else {
         throw new Error(data.error);
       }
-      scanBtn.disabled = false;
-      scanBtn.textContent = 'Analyze File';
+      if (scanBtn) {
+        scanBtn.disabled = false;
+        scanBtn.textContent = 'Analyze File';
+      }
       return;
     }
 
@@ -392,37 +540,45 @@ async function handleScan() {
     const resultCard = document.getElementById('resultCard');
     const score = Math.round(data.aiScore * 100);
 
-    document.getElementById('resultScore').textContent = score + '%';
-    document.getElementById('resultScore').style.color = data.isAI ? 'var(--danger)' : 'var(--success)';
-    document.getElementById('resultVerdict').textContent = data.isAI ? 'Likely AI-Generated' : 'Likely Human-Made';
-    document.getElementById('resultVerdict').style.color = data.isAI ? 'var(--danger)' : 'var(--success)';
+    const resultScore = document.getElementById('resultScore');
+    if (resultScore) {
+      resultScore.textContent = score + '%';
+      resultScore.style.color = data.isAI ? 'var(--danger)' : 'var(--success)';
+    }
 
-    resultCard.style.display = 'block';
+    const resultVerdict = document.getElementById('resultVerdict');
+    if (resultVerdict) {
+      resultVerdict.textContent = data.isAI ? 'Likely AI-Generated' : 'Likely Human-Made';
+      resultVerdict.style.color = data.isAI ? 'var(--danger)' : 'var(--success)';
+    }
+
+    if (resultCard) {
+      resultCard.style.display = 'block';
+    }
 
     if (data.scansRemaining !== undefined) {
       showStatus('Scans remaining: ' + data.scansRemaining, false);
     }
 
-    scanBtn.textContent = 'Scan Complete';
+    if (scanBtn) {
+      scanBtn.textContent = 'Scan Complete';
+    }
   } catch (error) {
     showStatus(error.message, true);
-    scanBtn.disabled = false;
-    scanBtn.textContent = 'Analyze File';
+    if (scanBtn) {
+      scanBtn.disabled = false;
+      scanBtn.textContent = 'Analyze File';
+    }
   }
 }
 
 // Checkout
 async function checkout(priceId, mode) {
-  alert('Checkout function called!'); // Debug alert
-  
   const { data: session } = await supabase.auth.getSession();
   if (!session?.session) {
-    alert('No session - opening login');
     openAuthModal(true);
     return;
   }
-
-  alert('Session found, calling backend...');
 
   try {
     const response = await fetch(BE + '/create-checkout', {
@@ -437,7 +593,6 @@ async function checkout(priceId, mode) {
     const data = await response.json();
 
     if (data.sessionId) {
-      alert('Got session ID, redirecting...');
       stripe.redirectToCheckout({ sessionId: data.sessionId });
     } else {
       alert('Checkout error: ' + (data.error || 'Unknown error'));
@@ -446,4 +601,3 @@ async function checkout(priceId, mode) {
     alert('Checkout error: ' + error.message);
   }
 }
-
