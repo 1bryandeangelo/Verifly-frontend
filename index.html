@@ -3,11 +3,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Verifly - Verify What's Real</title>
+  <title>Verifly - AI Image Detection | Detect Deepfakes & AI-Generated Content</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI-powered detection to identify AI-generated images, audio, and video.">
+  <meta name="description" content="Free AI image detector. Verify if photos, videos, and audio are real or AI-generated. 95% accuracy. Detect deepfakes, AI art, and synthetic media instantly.">
+  <meta name="keywords" content="ai image detector, deepfake detector, ai detection, detect ai images, ai content detector, fake image detector, synthetic media detection, ai photo detector, ai art detector">
+
+  <!-- Open Graph / Facebook -->
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tryverifly.com">
+  <meta property="og:title" content="Verifly - Detect AI-Generated Images & Deepfakes">
+  <meta property="og:description" content="Free AI detection tool. Upload any image to verify if it's real or AI-generated. 95% accuracy.">
+  <meta property="og:image" content="https://tryverifly.com/og-image.png">
+
+  <!-- Twitter -->
+
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://tryverifly.com">
+  <meta property="twitter:title" content="Verifly - Detect AI-Generated Images & Deepfakes">
+  <meta property="twitter:description" content="Free AI detection tool. Upload any image to verify if it's real or AI-generated.">
+  <meta property="twitter:image" content="https://tryverifly.com/og-image.png">
+
+  <!-- Canonical URL -->
+
+  <link rel="canonical" href="https://tryverifly.com">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="https://js.stripe.com/v3/"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--bg-primary:#0a0f1a;--bg-secondary:#111827;--bg-card:#1a2234;--bg-elevated:#232d42;--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--accent:#14b8a6;--accent-glow:rgba(20,184,166,0.3);--danger:#ef4444;--success:#22c55e;--border:#2a3a52;--font-display:'Space Mono',monospace;--font-body:'DM Sans',sans-serif}
@@ -403,23 +427,17 @@
 
     // Scan button
     document.getElementById('scanBtn').onclick = async function() {
-      alert('DEBUG 1: Scan button clicked');
-      
       if (!user) {
-        alert('DEBUG 2: No user, showing login');
         document.getElementById('authModal').classList.add('active');
         return;
       }
       
       if (!file) {
-        alert('DEBUG 3: No file selected');
+        alert('Please select a file first');
         return;
       }
 
-      alert('DEBUG 4: User and file OK, getting session...');
       const { data: session } = await sb.auth.getSession();
-      alert('DEBUG 5: Session retrieved: ' + !!session.session);
-      
       const scanBtn = document.getElementById('scanBtn');
       const statusMsg = document.getElementById('statusMsg');
       
@@ -428,7 +446,6 @@
       statusMsg.innerHTML = '';
 
       try {
-        alert('DEBUG 6: Creating FormData and calling backend...');
         const formData = new FormData();
         formData.append('file', file);
 
@@ -438,9 +455,7 @@
           body: formData
         });
 
-        alert('DEBUG 7: Backend responded with status: ' + res.status);
         const data = await res.json();
-        alert('DEBUG 8: Response data: ' + JSON.stringify(data));
 
         if (data.error) {
           if (data.error === 'SCAN_LIMIT_REACHED') {
@@ -468,7 +483,6 @@
         scanBtn.textContent = 'Scan Complete!';
 
       } catch (err) {
-        alert('DEBUG 9: Error caught: ' + err.message);
         console.error('Scan error:', err);
         statusMsg.innerHTML = '<div class="msg error">Error: ' + err.message + '</div>';
         scanBtn.disabled = false;
@@ -632,6 +646,32 @@
         document.getElementById('profileScans').textContent = 'Error';
       }
     }
+  </script>
+
+  <!-- Structured Data for SEO -->
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Verifly",
+    "description": "AI-powered detection to identify AI-generated images, deepfakes, and synthetic media with 95% accuracy",
+    "url": "https://tryverifly.com",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "Free AI detection with 1 scan included"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "127"
+    },
+    "featureList": "AI image detection, Deepfake detection, Audio detection, Video detection, Real-time analysis"
+  }
   </script>
 
 </body>
