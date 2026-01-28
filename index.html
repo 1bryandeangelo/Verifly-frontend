@@ -402,22 +402,78 @@
     };
 
     // Scan button
-    document.getElementById('scanBtn').onclick = function() {
+    document.getElementById('scanBtn').onclick = async function() {
+      alert('DEBUG 1: Scan button clicked');
+      
       if (!user) {
+        alert('DEBUG 2: No user, showing login');
         document.getElementById('authModal').classList.add('active');
         return;
       }
+      
       if (!file) {
-        alert('Please select a file first');
+        alert('DEBUG 3: No file selected');
         return;
       }
-      // Placeholder - real scan coming soon
-      document.getElementById('resultCard').style.display = 'block';
-      document.getElementById('resultScore').textContent = '87%';
-      document.getElementById('resultScore').style.color = '#ef4444';
-      document.getElementById('resultVerdict').textContent = 'Likely AI-Generated';
-      document.getElementById('resultVerdict').style.color = '#ef4444';
-      document.getElementById('scanBtn').textContent = 'Scan Complete!';
+
+      alert('DEBUG 4: User and file OK, getting session...');
+      const { data: session } = await sb.auth.getSession();
+      alert('DEBUG 5: Session retrieved: ' + !!session.session);
+      
+      const scanBtn = document.getElementById('scanBtn');
+      const statusMsg = document.getElementById('statusMsg');
+      
+      scanBtn.disabled = true;
+      scanBtn.textContent = 'Analyzing...';
+      statusMsg.innerHTML = '';
+
+      try {
+        alert('DEBUG 6: Creating FormData and calling backend...');
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch(BACKEND + '/scan', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + session.session.access_token },
+          body: formData
+        });
+
+        alert('DEBUG 7: Backend responded with status: ' + res.status);
+        const data = await res.json();
+        alert('DEBUG 8: Response data: ' + JSON.stringify(data));
+
+        if (data.error) {
+          if (data.error === 'SCAN_LIMIT_REACHED') {
+            statusMsg.innerHTML = '<div class="msg error">Scan limit reached. <a href="#pricing" style="color:var(--accent)">Upgrade your plan</a></div>';
+          } else {
+            throw new Error(data.error);
+          }
+          scanBtn.disabled = false;
+          scanBtn.textContent = 'Analyze File';
+          return;
+        }
+
+        // Show real results
+        const score = Math.round(data.aiScore * 100);
+        document.getElementById('resultCard').style.display = 'block';
+        document.getElementById('resultScore').textContent = score + '%';
+        document.getElementById('resultScore').style.color = data.isAI ? '#ef4444' : '#22c55e';
+        document.getElementById('resultVerdict').textContent = data.isAI ? 'Likely AI-Generated' : 'Likely Human-Made';
+        document.getElementById('resultVerdict').style.color = data.isAI ? '#ef4444' : '#22c55e';
+
+        if (data.scansRemaining !== undefined) {
+          statusMsg.innerHTML = '<div class="msg success">Scans remaining: ' + data.scansRemaining + '</div>';
+        }
+
+        scanBtn.textContent = 'Scan Complete!';
+
+      } catch (err) {
+        alert('DEBUG 9: Error caught: ' + err.message);
+        console.error('Scan error:', err);
+        statusMsg.innerHTML = '<div class="msg error">Error: ' + err.message + '</div>';
+        scanBtn.disabled = false;
+        scanBtn.textContent = 'Analyze File';
+      }
     };
 
     // Pricing - Free button
