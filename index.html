@@ -468,12 +468,18 @@
           return;
         }
 
-        // Show real results
-        const score = Math.round(data.aiScore * 100);
+        // Show real results with inverted score for clarity
+        const rawScore = data.aiScore; // 0.0 to 1.0
+        const confidenceScore = data.isAI 
+          ? Math.round(rawScore * 100)  // If AI: show AI confidence (e.g., 87% AI)
+          : Math.round((1 - rawScore) * 100); // If Human: show NOT-AI confidence (e.g., 63% NOT AI)
+        
         document.getElementById('resultCard').style.display = 'block';
-        document.getElementById('resultScore').textContent = score + '%';
+        document.getElementById('resultScore').textContent = confidenceScore + '%';
         document.getElementById('resultScore').style.color = data.isAI ? '#ef4444' : '#22c55e';
-        document.getElementById('resultVerdict').textContent = data.isAI ? 'Likely AI-Generated' : 'Likely Human-Made';
+        document.getElementById('resultVerdict').textContent = data.isAI 
+          ? 'AI Generated' 
+          : 'Not AI Generated';
         document.getElementById('resultVerdict').style.color = data.isAI ? '#ef4444' : '#22c55e';
 
         if (data.scansRemaining !== undefined) {
